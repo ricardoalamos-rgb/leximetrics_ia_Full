@@ -1,0 +1,8 @@
+{
+    "name": "scraper-service",
+    "version": "0.0.1",
+    "scripts": {
+        "start:dev": "uvicorn app.main:app --reload",
+        "install:playwright": "playwright install"
+    }
+}

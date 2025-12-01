@@ -1,0 +1,30 @@
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+COPY package*.json ./
+COPY yarn.lock ./
+COPY . .
+
+RUN yarn install --frozen-lockfile
+RUN yarn build:web
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=3000
+
+COPY package*.json ./
+COPY yarn.lock ./
+RUN yarn install --frozen-lockfile --production
+
+COPY --from=builder /app/apps/web/.next ./apps/web/.next
+COPY --from=builder /app/apps/web/public ./apps/web/public
+COPY --from=builder /app/apps/web/next.config.js ./apps/web/next.config.js
+COPY --from=builder /app/apps/web/tailwind.config.ts ./apps/web/tailwind.config.ts
+COPY --from=builder /app/apps/web/postcss.config.js ./apps/web/postcss.config.js
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
+
+EXPOSE 3000
+
+CMD ["node", "apps/web/node_modules/next/dist/bin/next", "start", "apps/web", "-p", "3000"]

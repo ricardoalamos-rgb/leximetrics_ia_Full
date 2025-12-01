@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic
+python-dotenv
+pdfplumber
+openai
+playwright
+httpx
+beautifulsoup4
+lxml
+chromadb
+sentence-transformers
+requests
+gTTS
+pydantic-settings
+httpx

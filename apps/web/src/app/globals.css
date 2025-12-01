@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --lex-background: #ffffff;
+  --lex-text: #0f172a;
+  --lex-primary: #2563eb;
+  --lex-secondary: #64748b;
+  --lex-accent: #f59e0b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --lex-background: #0f172a;
+    --lex-text: #f8fafc;
+    --lex-primary: #3b82f6;
+    --lex-secondary: #94a3b8;
+    --lex-accent: #fbbf24;
+  }
+}
+
+body {
+  background-color: theme('colors.lex.background');
+  color: theme('colors.lex.text');
+}

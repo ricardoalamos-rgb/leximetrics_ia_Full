@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-leximetrics}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - leximetrics-network
+
+  ai-service:
+    build:
+      context: ./services/ai-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-leximetrics}
+    depends_on:
+      - db
+    networks:
+      - leximetrics-network
+
+  scraper-service:
+    build:
+      context: ./services/scraper-service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - SCRAPER_SERVICE_TOKEN=${SCRAPER_SERVICE_TOKEN}
+      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
+      - AWS_REGION=${AWS_REGION}
+    shm_size: '2gb'
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - leximetrics-network
+
+  jarvis-service:
+    build:
+      context: ./services/jarvis-service
+      dockerfile: Dockerfile
+    container_name: leximetrics-jarvis
+    restart: always
+    environment:
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL_NAME: ${GEMINI_MODEL_NAME:-gemini-2.0-flash}
+      JARVIS_CHROMA_DIR: /app/chroma_db
+      JARVIS_TTS_ENABLED: "true"
+      JARVIS_TTS_LANG: "es"
+      JARVIS_TTS_SPEED: "0.95" # un poco más lento → más grave
+      JARVIS_TTS_PITCH_SHIFT: "0.90" # pitch más bajo
+    ports:
+      - "8004:8004"
+    volumes:
+      - jarvis_chroma:/app/chroma_db
+      - jarvis_audio:/app/audio_cache
+    networks:
+      - leximetrics-network
+
+volumes:
+  postgres_data:
+    name: leximetrics_data
+  jarvis_chroma:
+    name: jarvis_chroma
+  jarvis_audio:
+    name: jarvis_audio
+
+networks:
+  leximetrics-network:
+    driver: bridge

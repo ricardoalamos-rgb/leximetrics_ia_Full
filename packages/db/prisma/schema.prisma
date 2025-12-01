@@ -1,0 +1,396 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  LAWYER
+  PARALEGAL
+  CLIENT
+  ASSISTANT
+  PROCURATOR
+}
+
+enum EstadoCausa {
+  PREJUDICIAL
+  TRAMITACION
+  SENTENCIA
+  ARCHIVADA
+  SUSPENDIDA
+  SIN_DEMANDA
+  SIN_NOTIFICAR
+  NOTIFICADO
+  EMBARGADO
+  ETAPA_REMATE
+  TERMINADA
+  SUSPENDIDO
+}
+
+enum DocumentType {
+  DEMANDA
+  ESCRITO
+  RESOLUCION
+  CONTRATO
+  OTRO
+}
+
+enum ProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// NUEVOS ENUMS PARA TELEMETRÍA IA
+enum TelemetryFeature {
+  JARVIS_ASK
+  DOCWORKS_ANALYZE
+  DOCWORKS_GENERATE
+  DOCWORKS_SUGGEST
+  DASHBOARD_INSIGHT
+  SCRAPER_SYNC
+  OTHER
+}
+
+enum AiProvider {
+  OPENAI
+  GOOGLE
+  ANTHROPIC
+  AZURE_OPENAI
+  OTHER
+}
+
+// Multi-tenant Core
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users        User[]
+  causas       Causa[]
+  gestiones    Gestion[]
+  remates      Remate[]
+  templates    Template[]
+  documentos   Documento[]
+  tenantConfig TenantConfig?
+  aiInteractions AiInteraction[]
+  aiEvents     AiEvent[]
+  aiUsage      AiUsage[]
+  // NUEVA RELACIÓN: eventos de uso IA por tenant
+  aiUsageEvents AiUsageEvent[]
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          UserRole  @default(LAWYER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+
+  accounts Account[]
+  sessions Session[]
+  aiInteractions AiInteraction[]
+  aiEvents     AiEvent[]
+  aiUsage      AiUsage[]
+  // NUEVA RELACIÓN: uso de IA por usuario
+  aiUsageEvents AiUsageEvent[]
+}
+
+// NextAuth Models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Domain Models
+model Causa {
+  id        String      @id @default(uuid())
+  rol       String
+  caratula  String
+  tribunal  String
+  snumcaso  String      @default("UNKNOWN") // Added default to avoid migration issues on existing data if any
+  nombreDeudor String?
+  rutDeudor    String?
+  montoDemanda Float?
+  fechaIngreso DateTime?
+  ultimaGestion DateTime?
+  probabilidadExito Float?
+  pendientes   Json?
+  estado    EstadoCausa @default(TRAMITACION)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+
+  gestiones  Gestion[]
+  documentos Documento[]
+  remates    Remate[]
+}
+
+model Gestion {
+  id          String   @id @default(uuid())
+  descripcion String
+  fecha       DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  causaId String
+  causa   Causa  @relation(fields: [causaId], references: [id])
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+}
+
+model Remate {
+  id          String   @id @default(uuid())
+  fechaRemate DateTime
+  minimo      Float?
+  garantia    Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  causaId String
+  causa   Causa  @relation(fields: [causaId], references: [id])
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+}
+
+model Documento {
+  id        String       @id @default(uuid())
+  nombre    String
+  tipo      DocumentType @default(OTRO)
+  url       String
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  causaId String?
+  causa   Causa?  @relation(fields: [causaId], references: [id])
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+
+  embeddings DocumentEmbedding[]
+}
+
+model DocumentEmbedding {
+  id        String                 @id @default(uuid())
+  embedding Unsupported("vector(768)")?
+  content   String
+  createdAt DateTime               @default(now())
+
+  documentoId String
+  documento   Documento @relation(fields: [documentoId], references: [id])
+
+  // @@index([embedding], type: Hnsw) - Unsupported in Prisma Schema, add via migration
+
+}
+
+model TenantConfig {
+  tenantId                String   @id
+  tenant                  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  alertEmails             String[]
+  inactividadAmarilloDias Int      @default(7)
+  inactividadRojoDias     Int      @default(15)
+
+  // --- NUEVO: Estilo DocWorks del Estudio ---
+  /// Configuración global de estilo del estudio para DocWorks.
+  docWorksStyle Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model AiInteraction {
+  id        String   @id @default(uuid())
+  timestamp DateTime @default(now())
+  origen    String   // e.g., 'CAUSA_360', 'DOCWORKS', 'PDF_ANALYSIS'
+  
+  inputSummary String?
+  rawInput     Json?
+  rawOutput    Json?
+  
+  aceptadaPorUsuario Boolean?
+  notasUsuario       String?
+
+  userId   String
+  user     User   @relation(fields: [userId], references: [id])
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+}
+
+// --- TELEMETRÍA IA (Leximetrics) ---
+model AiUsageEvent {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  tenantId String
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  userId String?
+  user   User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  feature   TelemetryFeature
+  provider  AiProvider
+  model     String
+
+  tokensPrompt     Int
+  tokensCompletion Int
+  tokensTotal      Int
+  costUsd          Float
+
+  latencyMs     Int?
+  correlationId String?
+  source        String? // ej. "ai-service", "web-api"
+  metadata      Json?
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, userId, createdAt])
+  @@index([tenantId, feature, createdAt])
+  @@index([correlationId])
+}
+
+// --- TELEMETRÍA IA ---
+
+enum AiFeatureType {
+  JARVIS_CHAT
+  DOCWORKS_ANALYSIS
+  DOCWORKS_GENERATION
+  SCRAPER_PJUD
+}
+
+model Template {
+  id          String       @id @default(cuid())
+  tenantId    String
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name        String
+  placeholders Json?
+  storagePath String
+  type        DocumentType
+
+  // --- NUEVO: Metadatos DocWorks 2.0 ---
+  /// Categoría funcional de la plantilla (ej: "Demanda ejecutiva", "Escrito simple", etc.)
+  category     String?   @default("General")
+  /// Descripción amigable para el usuario
+  description  String?
+  /// Tags libres para filtros rápidos
+  tags         String[]  @default([])
+  /// Esquema parametrizado de campos (DocWorks 2.0).
+  paramSchema  Json?
+  /// Override de estilo específico para esta plantilla (si se quiere diferenciar del estilo global del estudio)
+  styleOverride Json?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([tenantId, name])
+}
+
+model AiEvent {
+  id           String        @id @default(cuid())
+  tenantId     String
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId       String?
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  feature      AiFeatureType
+  provider     String?
+  modelName    String?
+
+  success      Boolean
+  errorCode    String?
+  errorMessage String?
+
+  inputTokens  Int?
+  outputTokens Int?
+  totalTokens  Int?
+
+  latencyMs    Int?
+
+  // --- NUEVO: costos aproximados en USD (pueden quedar en null si no se conocen) ---
+  inputCostUsd   Decimal?    @db.Decimal(10, 6)
+  outputCostUsd  Decimal?    @db.Decimal(10, 6)
+  totalCostUsd   Decimal?    @db.Decimal(10, 6)
+
+  metadata     Json?
+
+  createdAt    DateTime      @default(now())
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, feature, createdAt])
+}
+
+model AiUsage {
+  id        String   @id @default(cuid())
+
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // ¿Desde qué “feature” vino esta llamada?
+  // Ej: "DOCWORKS_FILL_FIELD", "JARVIS_CHAT", "RISK_ANALYZER", etc.
+  feature   String
+
+  // Proveedor/modelo IA
+  provider  String   // "openai", "google", "local", ...
+  model     String   // "gpt-4o", "gemini-2.0-flash", ...
+
+  tokensInput   Int?  // tokens prompt
+  tokensOutput  Int?  // tokens completion
+  costUsd       Float?
+
+  latencyMs     Int?  // tiempo total de la operación
+  success       Boolean @default(true)
+  errorCode     String?
+
+  // Contexto adicional: fuente usada, id de causa, etc.
+  meta      Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, feature, createdAt])
+  @@index([userId, createdAt])
+}
