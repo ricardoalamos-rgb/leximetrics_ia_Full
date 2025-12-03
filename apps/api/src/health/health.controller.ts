@@ -31,15 +31,15 @@ export class HealthController {
         const services = [
             {
                 name: 'ai-service',
-                url: process.env.AI_SERVICE_URL ?? 'http://localhost:8000/health',
+                url: `${process.env.AI_SERVICE_URL ?? 'http://localhost:8000'}/health`,
             },
             {
                 name: 'scraper-service',
-                url: process.env.SCRAPER_SERVICE_URL ?? 'http://localhost:8100/health',
+                url: `${process.env.SCRAPER_SERVICE_URL ?? 'http://localhost:8001'}/health`,
             },
             {
                 name: 'jarvis-backend',
-                url: process.env.JARVIS_BACKEND_URL ?? 'http://localhost:8200/health',
+                url: `${process.env.JARVIS_BACKEND_URL ?? 'http://localhost:8004'}/health`,
             },
         ];
 

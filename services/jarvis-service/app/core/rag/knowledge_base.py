@@ -1,16 +1,17 @@
 from typing import List, Dict, Any
-from sentence_transformers import SentenceTransformer
-import chromadb
-from chromadb.utils import embedding_functions
-from ..config import CHROMA_PERSIST_DIR, EMBEDDING_MODEL_NAME, TOP_K_RESULTS
+# from sentence_transformers import SentenceTransformer
+# import chromadb
+# from chromadb.utils import embedding_functions
+from app.config import CHROMA_PERSIST_DIR, EMBEDDING_MODEL_NAME, TOP_K_RESULTS
 
 # Cargamos modelo de embeddings una sola vez
-_sentence_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
-embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
-    model_name=EMBEDDING_MODEL_NAME
-)
+# _sentence_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
+# embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
+#     model_name=EMBEDDING_MODEL_NAME
+# )
 
-chroma_client = chromadb.PersistentClient(path=CHROMA_PERSIST_DIR)
+# chroma_client = chromadb.PersistentClient(path=CHROMA_PERSIST_DIR)
+chroma_client = None
 
 DEFAULT_COLLECTION = "libros"  # Puedes cambiarlo o hacer múltiple colección
 

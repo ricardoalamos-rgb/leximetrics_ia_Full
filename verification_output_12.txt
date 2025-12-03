@@ -1,0 +1,35 @@
+Loaded PjudScraper from: /Users/ricardoalamossantacruz/Desktop/Antigravity/leximetrics-ia/services/scraper-service/app/scraper/pjud.py
+sys.path: ['/Users/ricardoalamossantacruz/Desktop/Antigravity/leximetrics-ia/services/scraper-service', '/Library/Frameworks/Python.framework/Versions/3.14/lib/python314.zip', '/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14', '/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/lib-dynload', '/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages', '/Users/ricardoalamossantacruz/Desktop/Antigravity/leximetrics-ia/services/scraper-service/app']
+Starting Scraper Verification...
+
+--- 1. Testing Login with Clave Única ---
+Navegando a https://oficinajudicialvirtual.pjud.cl/home/index.php...
+Buscando botón 'Todos los servicios'...
+Error en login Clave Única: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("button:has-text('Todos los servicios')").first
+    - locator resolved to <button tabindex="1" class="dropbtn" onclick="myFunction()" title="Para navegar a traves de las opciones presione enter y utilice las teclas de desplazamiento">Todos los servicios</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="myLargeModalLabel" class="modal fade bd-example-modal-lg in">…</div> from <footer class="site-footer">…</footer> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="myLargeModalLabel" class="modal fade bd-example-modal-lg in">…</div> from <footer class="site-footer">…</footer> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    57 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="myLargeModalLabel" class="modal fade bd-example-modal-lg in">…</div> from <footer class="site-footer">…</footer> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+❌ Login failed! Aborting.

@@ -1,0 +1,8 @@
+Loaded PjudScraper from: /Users/ricardoalamossantacruz/Desktop/Antigravity/leximetrics-ia/services/scraper-service/app/scraper/pjud.py
+sys.path: ['/Users/ricardoalamossantacruz/Desktop/Antigravity/leximetrics-ia/services/scraper-service', '/Library/Frameworks/Python.framework/Versions/3.14/lib/python314.zip', '/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14', '/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/lib-dynload', '/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages', '/Users/ricardoalamossantacruz/Desktop/Antigravity/leximetrics-ia/services/scraper-service/app']
+Starting Scraper Verification...
+
+--- 1. Testing Login with Clave Única ---
+Navegando a https://oficinajudicialvirtual.pjud.cl/home/index.php...
+Error en login Clave Única: Timeout 30000ms exceeded.
+❌ Login failed! Aborting.

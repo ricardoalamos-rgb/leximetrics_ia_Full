@@ -3,6 +3,9 @@
 import { useEffect, useState, useMemo } from "react";
 import { apiClient } from "@/lib/api";
 import { Documento } from "@leximetrics/db";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Loader2, FileText, Sparkles, CheckCircle2, Upload, ArrowRight, ArrowLeft, Download } from "lucide-react";
 
 // Extended Template type for DocWorks 2.0
 interface DocWorksStyle {
@@ -193,7 +196,7 @@ export default function DocWorksView() {
         if (typeof window !== "undefined" && window.location.hostname === "localhost") {
             return "http://localhost:8000";
         }
-        return "http://localhost:8000"; // Default fallback
+        return "/ai"; // Default fallback to relative proxy
     };
 
     const handleAIFillField = async (field: ParamField) => {
@@ -260,7 +263,7 @@ export default function DocWorksView() {
 
                 {field.type === 'longtext' ? (
                     <textarea
-                        className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-lex-accent focus:border-lex-accent dark:bg-slate-700 dark:text-white dark:border-gray-600"
+                        className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-lex-brand/20 focus:border-lex-brand dark:bg-slate-700 dark:text-white dark:border-gray-600 transition-all"
                         rows={4}
                         value={value}
                         onChange={(e) => handleChange(e.target.value)}
@@ -268,7 +271,7 @@ export default function DocWorksView() {
                     />
                 ) : field.type === 'select' ? (
                     <select
-                        className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-lex-accent focus:border-lex-accent dark:bg-slate-700 dark:text-white dark:border-gray-600"
+                        className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-lex-brand/20 focus:border-lex-brand dark:bg-slate-700 dark:text-white dark:border-gray-600 transition-all"
                         value={value}
                         onChange={(e) => handleChange(e.target.value)}
                     >
@@ -280,7 +283,7 @@ export default function DocWorksView() {
                 ) : (
                     <input
                         type={field.type === 'date' ? 'date' : 'text'}
-                        className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-lex-accent focus:border-lex-accent dark:bg-slate-700 dark:text-white dark:border-gray-600"
+                        className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-lex-brand/20 focus:border-lex-brand dark:bg-slate-700 dark:text-white dark:border-gray-600 transition-all"
                         value={value}
                         onChange={(e) => handleChange(e.target.value)}
                         placeholder={field.description}
@@ -295,13 +298,14 @@ export default function DocWorksView() {
                     {field.aiEnabled && (
                         <button
                             type="button"
-                            className="text-xs text-lex-accent underline disabled:opacity-60 ml-2 whitespace-nowrap"
+                            className="text-xs text-lex-brand font-medium hover:underline disabled:opacity-60 ml-2 whitespace-nowrap flex items-center gap-1"
                             onClick={() => handleAIFillField(field)}
                             disabled={aiLoadingFieldKey === field.key}
                         >
+                            <Sparkles className="w-3 h-3" />
                             {aiLoadingFieldKey === field.key
-                                ? 'JARVIS está redactando...'
-                                : 'Completar con JARVIS'}
+                                ? 'JARVIS pensando...'
+                                : 'Completar con IA'}
                         </button>
                     )}
                 </div>
@@ -310,14 +314,6 @@ export default function DocWorksView() {
     };
 
     const renderField = (key: string, label: string, type: string = 'text', description?: string, aiEnabled?: boolean, fieldObj?: ParamField) => {
-        // This renderField is for legacy placeholders or when schema is not used.
-        // For schema-driven fields, renderFieldInput is used.
-        // The existing renderField logic is kept for backward compatibility if needed,
-        // but the instruction implies a full replacement or a new approach.
-        // Given the context of `selectedTemplateSchema` being present,
-        // the `renderFieldInput` should be used for schema fields.
-        // For now, I'll keep the original `renderField` as is, but it won't be called
-        // if `selectedTemplateSchema` is present.
         return (
             <div key={key}>
                 <div className="flex justify-between mb-1">
@@ -326,15 +322,6 @@ export default function DocWorksView() {
                         {fieldObj?.required && <span className="text-red-500 ml-1">*</span>}
                     </label>
                     <div className="flex items-center space-x-2">
-                        {aiEnabled && (
-                            <button
-                                type="button"
-                                className="text-xs text-lex-accent underline hover:text-lex-primary"
-                                onClick={() => handleAIFillField(fieldObj as ParamField)} // Cast to ParamField for compatibility
-                            >
-                                Completar con IA (JARVIS)
-                            </button>
-                        )}
                         {fieldSources[key] === 'ai' && (
                             <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
                                 ✨ IA
@@ -354,10 +341,10 @@ export default function DocWorksView() {
                         rows={3}
                         value={formData[key] || ""}
                         onChange={handleInputChange}
-                        className={`mt-1 block w-full rounded-md shadow-sm sm:text-sm dark:bg-slate-700 dark:text-white
+                        className={`mt-1 block w-full rounded-lg shadow-sm sm:text-sm dark:bg-slate-700 dark:text-white p-3
                             ${fieldSources[key] === 'ai'
                                 ? 'border-green-300 focus:border-green-500 focus:ring-green-500 dark:border-green-800'
-                                : 'border-gray-300 focus:border-lex-primary focus:ring-lex-primary dark:border-gray-600'
+                                : 'border-gray-300 focus:border-lex-brand focus:ring-lex-brand dark:border-gray-600'
                             }`}
                     />
                 ) : (
@@ -367,10 +354,10 @@ export default function DocWorksView() {
                         id={key}
                         value={formData[key] || ""}
                         onChange={handleInputChange}
-                        className={`mt-1 block w-full rounded-md shadow-sm sm:text-sm dark:bg-slate-700 dark:text-white
+                        className={`mt-1 block w-full rounded-lg shadow-sm sm:text-sm dark:bg-slate-700 dark:text-white p-3
                             ${fieldSources[key] === 'ai'
                                 ? 'border-green-300 focus:border-green-500 focus:ring-green-500 dark:border-green-800'
-                                : 'border-gray-300 focus:border-lex-primary focus:ring-lex-primary dark:border-gray-600'
+                                : 'border-gray-300 focus:border-lex-brand focus:ring-lex-brand dark:border-gray-600'
                             }`}
                     />
                 )}
@@ -552,35 +539,42 @@ export default function DocWorksView() {
             <div className="mb-8">
                 <div className="flex items-center justify-between">
                     {steps.map((step, idx) => (
-                        <div key={step.num} className="flex flex-col items-center relative z-10">
+                        <div key={step.num} className="flex flex-col items-center relative z-10 w-full">
                             <div
-                                className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-bold transition-colors ${currentStep >= step.num
-                                    ? "border-lex-primary bg-lex-primary text-white"
-                                    : "border-gray-300 bg-white text-gray-500 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-400"
+                                className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-300 ${currentStep >= step.num
+                                    ? "border-lex-brand bg-lex-brand text-white shadow-lg shadow-lex-brand/30"
+                                    : "border-gray-200 bg-white text-gray-400 dark:border-gray-700 dark:bg-slate-800 dark:text-gray-500"
                                     }`}
                             >
                                 {step.num}
                             </div>
-                            <span className={`mt-2 text-xs font-medium ${currentStep >= step.num ? "text-lex-primary" : "text-gray-500 dark:text-gray-400"
+                            <span className={`mt-2 text-xs font-medium transition-colors ${currentStep >= step.num ? "text-lex-brand font-bold" : "text-gray-400 dark:text-gray-500"
                                 }`}>
                                 {step.label}
                             </span>
                             {idx < steps.length - 1 && (
-                                <div className={`absolute top-4 left-1/2 h-0.5 w-[calc(100vw/4-2rem)] -z-10 ${currentStep > step.num ? "bg-lex-primary" : "bg-gray-200 dark:bg-gray-700"
-                                    }`} style={{ width: 'calc(100% + 4rem)', left: '50%' }} />
+                                <div className="absolute top-5 left-1/2 w-full h-0.5 bg-gray-100 dark:bg-gray-800 -z-10">
+                                    <div
+                                        className="h-full bg-lex-brand transition-all duration-500"
+                                        style={{ width: currentStep > step.num ? '100%' : '0%' }}
+                                    />
+                                </div>
                             )}
                         </div>
                     ))}
                 </div>
                 {placeholders.length > 0 && (
-                    <div className="mt-6">
-                        <div className="flex justify-between text-xs mb-1">
-                            <span className="font-medium text-gray-700 dark:text-gray-300">Progreso de campos</span>
-                            <span className="text-gray-500">{completionPercent}% ({placeholders.filter(k => (formData[k] ?? '').trim().length > 0).length}/{placeholders.length})</span>
+                    <div className="mt-6 bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                        <div className="flex justify-between text-xs mb-2">
+                            <span className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                <CheckCircle2 className="w-4 h-4 text-lex-brand" />
+                                Progreso de campos
+                            </span>
+                            <span className="text-gray-500 font-medium">{completionPercent}% ({placeholders.filter(k => (formData[k] ?? '').trim().length > 0).length}/{placeholders.length})</span>
                         </div>
-                        <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+                        <div className="h-2.5 w-full rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
                             <div
-                                className="h-2 rounded-full bg-lex-primary transition-all duration-500"
+                                className="h-full bg-gradient-to-r from-lex-brand to-lex-vibrant-cyan transition-all duration-500"
                                 style={{ width: `${completionPercent}%` }}
                             />
                         </div>
@@ -591,241 +585,257 @@ export default function DocWorksView() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto pb-20">
-            <h1 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">
-                DocWorks – Generador de Escritos y Demandas
-            </h1>
+        <div className="max-w-4xl mx-auto pb-20 animate-fade-in">
+            <div className="mb-8 text-center">
+                <h1 className="text-3xl font-extrabold bg-gradient-to-r from-lex-brand via-lex-primary to-lex-vibrant-cyan bg-clip-text text-transparent mb-2">
+                    DocWorks
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400">
+                    Generador inteligente de escritos y demandas judiciales.
+                </p>
+            </div>
 
             {renderStepIndicator()}
 
             {loadingTemplates ? (
-                <div className="text-center text-gray-500 py-12">Cargando DocWorks...</div>
+                <div className="flex flex-col items-center justify-center py-20">
+                    <Loader2 className="w-12 h-12 animate-spin text-lex-brand mb-4" />
+                    <p className="text-gray-500 font-medium">Cargando plantillas...</p>
+                </div>
             ) : (
                 <div className="space-y-6">
                     {error && (
-                        <div className="rounded-md bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400 border border-red-200 dark:border-red-900/50">
+                        <div className="rounded-xl bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400 border border-red-200 dark:border-red-900/50 flex items-center gap-2 animate-shake">
+                            <div className="p-1 bg-red-100 rounded-full"><ArrowRight className="w-4 h-4 rotate-180" /></div>
                             {error}
                         </div>
                     )}
                     {successMessage && (
-                        <div className="rounded-md bg-green-50 p-4 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400 border border-green-200 dark:border-green-900/50">
+                        <div className="rounded-xl bg-green-50 p-4 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400 border border-green-200 dark:border-green-900/50 flex items-center gap-2 animate-fade-in">
+                            <CheckCircle2 className="w-5 h-5 text-green-600" />
                             {successMessage}
                         </div>
                     )}
 
                     {currentStep === 1 && (
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                            <div className="md:col-span-2 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-slate-800">
-                                <label htmlFor="template" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-                                    Seleccionar Plantilla
-                                </label>
-                                <select
-                                    id="template"
-                                    className="block w-full rounded-md border-gray-300 py-3 pl-3 pr-10 text-base focus:border-lex-primary focus:outline-none focus:ring-lex-primary sm:text-sm dark:border-gray-600 dark:bg-slate-700 dark:text-white"
-                                    value={selectedTemplate?.id || ""}
-                                    onChange={handleTemplateChange}
-                                >
-                                    <option value="">-- Seleccione una plantilla --</option>
-                                    {templates.map((t) => (
-                                        <option key={t.id} value={t.id}>
-                                            {t.nombre}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 dark:border-gray-700 dark:bg-slate-800/50">
-                                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Ficha Técnica</h3>
-                                {selectedTemplate ? (
-                                    <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                                        <p><span className="font-medium">Nombre:</span> {selectedTemplate.nombre}</p>
-                                        <p><span className="font-medium">Tipo:</span> {selectedTemplate.tipo || 'N/A'}</p>
-                                        <p><span className="font-medium">Campos:</span> {placeholders.length}</p>
-                                        {selectedTemplateSchema && (
-                                            <p className="text-xs text-lex-primary mt-2">✨ Plantilla Parametrizada (DocWorks 2.0)</p>
-                                        )}
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-3 animate-slide-up">
+                            <Card className="md:col-span-2 border-t-4 border-t-lex-brand">
+                                <CardHeader>
+                                    <CardTitle>Seleccionar Plantilla</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <label htmlFor="template" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                                        Elige el tipo de documento a generar
+                                    </label>
+                                    <div className="relative">
+                                        <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                        <select
+                                            id="template"
+                                            className="block w-full rounded-xl border-gray-300 py-3 pl-10 pr-10 text-base focus:border-lex-brand focus:outline-none focus:ring-2 focus:ring-lex-brand/20 sm:text-sm dark:border-gray-600 dark:bg-slate-700 dark:text-white transition-all"
+                                            value={selectedTemplate?.id || ""}
+                                            onChange={handleTemplateChange}
+                                        >
+                                            <option value="">-- Seleccione una plantilla --</option>
+                                            {templates.map((t) => (
+                                                <option key={t.id} value={t.id}>
+                                                    {t.nombre}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
-                                ) : (
-                                    <p className="text-sm text-gray-500 italic">Selecciona una plantilla para ver detalles.</p>
-                                )}
-                            </div>
+                                </CardContent>
+                            </Card>
+                            <Card className="bg-gray-50 dark:bg-slate-800/50 border-dashed">
+                                <CardHeader>
+                                    <CardTitle className="text-base">Ficha Técnica</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    {selectedTemplate ? (
+                                        <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
+                                            <p className="flex justify-between"><span className="font-medium text-gray-900 dark:text-white">Nombre:</span> <span>{selectedTemplate.nombre}</span></p>
+                                            <p className="flex justify-between"><span className="font-medium text-gray-900 dark:text-white">Tipo:</span> <span>{selectedTemplate.tipo || 'N/A'}</span></p>
+                                            <p className="flex justify-between"><span className="font-medium text-gray-900 dark:text-white">Campos:</span> <span className="bg-gray-200 px-2 py-0.5 rounded-full text-xs font-bold text-gray-700">{placeholders.length}</span></p>
+                                            {selectedTemplateSchema && (
+                                                <div className="mt-4 p-2 bg-lex-brand/10 rounded-lg text-xs text-lex-brand font-medium flex items-center gap-2">
+                                                    <Sparkles className="w-4 h-4" />
+                                                    Plantilla Parametrizada 2.0
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center h-32 text-gray-400 text-center">
+                                            <FileText className="w-8 h-8 mb-2 opacity-20" />
+                                            <p className="text-xs">Selecciona una plantilla para ver detalles.</p>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
                         </div>
                     )}
 
                     {currentStep === 2 && selectedTemplate && (
-                        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-slate-800">
-                            <div className="text-center py-8">
-                                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
-                                    <span className="text-3xl">✨</span>
-                                </div>
-                                <h2 className="text-xl font-medium text-gray-900 dark:text-white mb-2">Asistencia IA</h2>
-                                <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
-                                    Sube un PDF (ej. demanda, resolución) y J.A.R.V.I.S. extraerá la información para completar la plantilla automáticamente.
-                                </p>
-
-                                <div className="flex justify-center mb-8">
-                                    <label className={`cursor-pointer inline-flex items-center rounded-md px-6 py-3 text-base font-medium text-white shadow-sm transition-colors ${analyzing ? 'bg-purple-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'
-                                        }`}>
-                                        {analyzing ? (
-                                            <>
-                                                <svg className="mr-2 h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                                Analizando...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <span>Subir PDF para Análisis</span>
-                                                <input
-                                                    type="file"
-                                                    accept="application/pdf"
-                                                    className="hidden"
-                                                    onChange={handleAnalyzePDF}
-                                                    disabled={analyzing}
-                                                />
-                                            </>
-                                        )}
-                                    </label>
-                                </div>
-
-                                {aiSummary && (
-                                    <div className="mx-auto max-w-sm rounded-lg bg-gray-50 p-4 text-left dark:bg-slate-800/50">
-                                        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Resumen del Análisis</h4>
-                                        <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                                            <li>• Texto analizado: {aiSummary.extractedTextLength} caracteres</li>
-                                            <li>• Campos completados por IA: <span className="font-medium text-green-600 dark:text-green-400">{aiSummary.fromAiCount}</span></li>
-                                        </ul>
+                        <Card className="border-t-4 border-t-purple-500 animate-slide-up">
+                            <CardContent className="p-8">
+                                <div className="text-center">
+                                    <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 shadow-lg shadow-purple-500/20 animate-bounce-subtle">
+                                        <Sparkles className="w-10 h-10" />
                                     </div>
-                                )}
-                            </div>
-                            <div className="flex justify-between border-t border-gray-200 pt-6 dark:border-gray-700">
-                                <button
-                                    onClick={() => setCurrentStep(1)}
-                                    className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                                >
-                                    ← Volver
-                                </button>
-                                <button
-                                    onClick={() => setCurrentStep(3)}
-                                    className="rounded-md bg-lex-primary px-4 py-2 text-sm font-medium text-white hover:bg-lex-accent"
-                                >
-                                    Continuar a Datos →
-                                </button>
-                            </div>
-                        </div>
+                                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Asistencia J.A.R.V.I.S.</h2>
+                                    <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-lg mx-auto text-lg">
+                                        Sube un PDF (ej. demanda, resolución) y la IA extraerá la información para completar la plantilla automáticamente.
+                                    </p>
+
+                                    <div className="flex justify-center mb-8">
+                                        <label className={`cursor-pointer inline-flex items-center gap-3 rounded-xl px-8 py-4 text-lg font-medium text-white shadow-lg transition-all hover:-translate-y-1 ${analyzing ? 'bg-purple-400 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:shadow-purple-500/30'
+                                            }`}>
+                                            {analyzing ? (
+                                                <>
+                                                    <Loader2 className="w-6 h-6 animate-spin" />
+                                                    Analizando Documento...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Upload className="w-6 h-6" />
+                                                    <span>Subir PDF para Análisis</span>
+                                                    <input
+                                                        type="file"
+                                                        accept="application/pdf"
+                                                        className="hidden"
+                                                        onChange={handleAnalyzePDF}
+                                                        disabled={analyzing}
+                                                    />
+                                                </>
+                                            )}
+                                        </label>
+                                    </div>
+
+                                    {aiSummary && (
+                                        <div className="mx-auto max-w-md rounded-xl bg-gray-50 p-6 text-left dark:bg-slate-800/50 border border-gray-200 dark:border-gray-700 animate-scale-in">
+                                            <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                                                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                                                Resumen del Análisis
+                                            </h4>
+                                            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                                                <li className="flex justify-between"><span>Texto analizado:</span> <span className="font-mono">{aiSummary.extractedTextLength} chars</span></li>
+                                                <li className="flex justify-between"><span>Campos completados por IA:</span> <span className="font-bold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 rounded-full">{aiSummary.fromAiCount}</span></li>
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex justify-between border-t border-gray-100 pt-8 mt-8 dark:border-gray-800">
+                                    <Button variant="ghost" onClick={() => setCurrentStep(1)}>
+                                        <ArrowLeft className="w-4 h-4 mr-2" /> Volver
+                                    </Button>
+                                    <Button variant="primary" onClick={() => setCurrentStep(3)}>
+                                        Continuar a Datos <ArrowRight className="w-4 h-4 ml-2" />
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
                     )}
 
                     {currentStep === 3 && selectedTemplate && (
-                        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-slate-800">
-                            <div className="mb-6">
-                                <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-1">Revisar y Completar</h2>
+                        <Card className="animate-slide-up">
+                            <CardHeader>
+                                <CardTitle>Revisar y Completar</CardTitle>
                                 <p className="text-sm text-gray-500">Verifica los datos extraídos y completa los campos faltantes.</p>
-                            </div>
+                            </CardHeader>
+                            <CardContent>
+                                {selectedTemplateSchema ? (
+                                    <div className="space-y-8">
+                                        {(selectedTemplateSchema.groups || [{ id: 'general', label: 'Datos Generales' }]).map((group) => {
+                                            const groupFields = selectedTemplateSchema.fields.filter(f => (f.group || 'general') === group.id);
+                                            if (groupFields.length === 0) return null;
 
-                            {selectedTemplateSchema ? (
-                                <div className="space-y-8">
-                                    {(selectedTemplateSchema.groups || [{ id: 'general', label: 'Datos Generales' }]).map((group) => {
-                                        const groupFields = selectedTemplateSchema.fields.filter(f => (f.group || 'general') === group.id);
-                                        if (groupFields.length === 0) return null;
-
-                                        return (
-                                            <section key={group.id} className="space-y-4">
-                                                <div className="flex items-center space-x-2 border-b border-gray-200 pb-2 dark:border-gray-700">
-                                                    {/* Icon could go here */}
-                                                    <h3 className="font-semibold text-gray-800 dark:text-gray-200">{group.label}</h3>
-                                                </div>
+                                            return (
+                                                <section key={group.id} className="space-y-4">
+                                                    <div className="flex items-center space-x-2 border-b border-gray-200 pb-2 dark:border-gray-700">
+                                                        <h3 className="font-bold text-gray-800 dark:text-gray-200 text-lg">{group.label}</h3>
+                                                    </div>
+                                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                                        {groupFields.map((field) => renderFieldInput(field))}
+                                                    </div>
+                                                </section>
+                                            );
+                                        })}
+                                        {placeholders.filter(ph => !selectedTemplateSchema.fields.find(f => f.key === ph)).length > 0 && (
+                                            <section className="space-y-4">
+                                                <h3 className="font-bold text-gray-800 dark:text-gray-200 text-lg border-b border-gray-200 pb-2">Otros Campos</h3>
                                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                                    {groupFields.map((field) => renderFieldInput(field))}
+                                                    {placeholders.filter(ph => !selectedTemplateSchema.fields.find(f => f.key === ph)).map(ph => renderField(ph, ph))}
                                                 </div>
                                             </section>
-                                        );
-                                    })}
-                                    {/* Handle fields not in any group or if schema is partial */}
-                                    {placeholders.filter(ph => !selectedTemplateSchema.fields.find(f => f.key === ph)).length > 0 && (
-                                        <section className="space-y-4">
-                                            <h3 className="font-semibold text-gray-800 dark:text-gray-200">Otros Campos</h3>
-                                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                                {placeholders.filter(ph => !selectedTemplateSchema.fields.find(f => f.key === ph)).map(ph => renderField(ph, ph))}
-                                            </div>
-                                        </section>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                    {placeholders.map((ph) => renderField(ph, ph))}
-                                </div>
-                            )}
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                        {placeholders.map((ph) => renderField(ph, ph))}
+                                    </div>
+                                )}
 
-                            <div className="flex justify-between border-t border-gray-200 pt-6 mt-8 dark:border-gray-700">
-                                <button
-                                    onClick={() => setCurrentStep(2)}
-                                    className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                                >
-                                    ← Volver a IA
-                                </button>
-                                <button
-                                    onClick={() => setCurrentStep(4)}
-                                    className="rounded-md bg-lex-primary px-4 py-2 text-sm font-medium text-white hover:bg-lex-accent"
-                                >
-                                    Continuar a Generar →
-                                </button>
-                            </div>
-                        </div>
+                                <div className="flex justify-between border-t border-gray-100 pt-8 mt-8 dark:border-gray-800">
+                                    <Button variant="ghost" onClick={() => setCurrentStep(2)}>
+                                        <ArrowLeft className="w-4 h-4 mr-2" /> Volver a IA
+                                    </Button>
+                                    <Button variant="primary" onClick={() => setCurrentStep(4)}>
+                                        Continuar a Generar <ArrowRight className="w-4 h-4 ml-2" />
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
                     )}
 
                     {currentStep === 4 && selectedTemplate && (
-                        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-slate-800">
-                            <div className="text-center py-8">
-                                <h2 className="text-xl font-medium text-gray-900 dark:text-white mb-6">Listo para Generar</h2>
+                        <Card className="border-t-4 border-t-green-500 animate-slide-up">
+                            <CardContent className="p-12 text-center">
+                                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Listo para Generar</h2>
 
-                                <div className="mx-auto max-w-sm rounded-lg border border-gray-200 bg-gray-50 p-6 mb-8 dark:border-gray-700 dark:bg-slate-800/50">
-                                    <h3 className="font-medium text-gray-900 dark:text-white mb-4">{selectedTemplate.nombre}</h3>
-                                    <div className="flex justify-between text-sm mb-2">
-                                        <span className="text-gray-500">Campos completados:</span>
-                                        <span className="font-medium text-gray-900 dark:text-white">
-                                            {placeholders.filter(k => (formData[k] ?? '').trim().length > 0).length} / {placeholders.length}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-500">Estado:</span>
-                                        <span className={`font-medium ${completionPercent === 100 ? 'text-green-600' : 'text-orange-500'}`}>
-                                            {completionPercent === 100 ? 'Completo' : 'Incompleto'}
-                                        </span>
+                                <div className="mx-auto max-w-md rounded-2xl border border-gray-200 bg-gray-50 p-8 mb-10 dark:border-gray-700 dark:bg-slate-800/50 shadow-sm">
+                                    <FileText className="w-12 h-12 text-lex-brand mx-auto mb-4" />
+                                    <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-6">{selectedTemplate.nombre}</h3>
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-500">Campos completados:</span>
+                                            <span className="font-bold text-gray-900 dark:text-white bg-white px-3 py-1 rounded-full border border-gray-200">
+                                                {placeholders.filter(k => (formData[k] ?? '').trim().length > 0).length} / {placeholders.length}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-500">Estado:</span>
+                                            <span className={`font-bold px-3 py-1 rounded-full ${completionPercent === 100 ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                                                {completionPercent === 100 ? 'Completo' : 'Incompleto'}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
 
                                 <button
                                     onClick={handleGenerate}
                                     disabled={generating}
-                                    className={`inline-flex items-center rounded-md px-8 py-4 text-lg font-medium text-white shadow-lg transition-all ${generating
-                                        ? "bg-lex-primary opacity-75 cursor-wait"
-                                        : "bg-lex-primary hover:bg-lex-accent hover:-translate-y-1"
+                                    className={`inline-flex items-center gap-3 rounded-xl px-10 py-5 text-xl font-bold text-white shadow-xl transition-all hover:-translate-y-1 ${generating
+                                        ? "bg-gray-400 cursor-not-allowed"
+                                        : "bg-gradient-to-r from-green-600 to-emerald-600 hover:shadow-green-500/30"
                                         }`}
                                 >
                                     {generating ? (
                                         <>
-                                            <svg className="mr-3 h-6 w-6 animate-spin" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
+                                            <Loader2 className="w-6 h-6 animate-spin" />
                                             Generando Documento...
                                         </>
                                     ) : (
                                         <>
-                                            <span className="mr-2">📄</span> Generar Documento
+                                            <Download className="w-6 h-6" />
+                                            Generar Documento
                                         </>
                                     )}
                                 </button>
-                            </div>
-                            <div className="flex justify-start border-t border-gray-200 pt-6 mt-8 dark:border-gray-700">
-                                <button
-                                    onClick={() => setCurrentStep(3)}
-                                    className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                                >
-                                    ← Volver a Datos
-                                </button>
-                            </div>
-                        </div>
+                                <div className="mt-8">
+                                    <Button variant="ghost" onClick={() => setCurrentStep(3)}>
+                                        <ArrowLeft className="w-4 h-4 mr-2" /> Volver a editar
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
                     )}
                 </div>
             )}

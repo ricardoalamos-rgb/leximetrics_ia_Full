@@ -1,6 +1,6 @@
 import requests
 from typing import List, Dict, Any
-from ..config import GEMINI_API_KEY, GEMINI_MODEL_NAME
+from app.config import GEMINI_API_KEY, GEMINI_MODEL_NAME
 
 GEMINI_ENDPOINT = (
     f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL_NAME}:generateContent"

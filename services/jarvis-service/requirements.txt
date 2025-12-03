@@ -1,13 +1,9 @@
-fastapi
+fastapi>=0.100.0
 uvicorn[standard]
 python-dotenv
 requests
-chromadb
-sentence-transformers
-gTTS
-PyPDF2
-pydantic
-numpy
+pydantic>=2.0.0
+pydantic-settings
 orjson
 playwright
 beautifulsoup4

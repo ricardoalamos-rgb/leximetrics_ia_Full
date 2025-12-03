@@ -181,11 +181,21 @@ model Gestion {
   tenant   Tenant @relation(fields: [tenantId], references: [id])
 }
 
+enum EstadoRemate {
+  PENDIENTE
+  PUBLICADO
+  POR_REALIZAR
+  ADJUDICADO
+  DESIERTO
+  PAGADO
+}
+
 model Remate {
   id          String   @id @default(uuid())
   fechaRemate DateTime
   minimo      Float?
   garantia    Float?
+  estado      EstadoRemate @default(PENDIENTE)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

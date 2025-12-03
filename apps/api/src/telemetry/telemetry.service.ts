@@ -7,7 +7,7 @@ import { AiUsageEvent, TelemetryFeature, AiProvider } from '@leximetrics/db';
 export class TelemetryService {
     constructor(private readonly prisma: PrismaService) { }
 
-    async createFromInternal(dto: CreateAiUsageEventDto) {
+    async createFromInternal(dto: CreateAiUsageEventDto): Promise<AiUsageEvent> {
         if (!dto.tenantId) {
             throw new BadRequestException('tenantId es obligatorio para registrar telemetría interna');
         }

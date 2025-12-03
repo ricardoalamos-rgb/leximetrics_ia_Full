@@ -20,12 +20,12 @@ const getAIServiceURL = () => {
     if (process.env.NEXT_PUBLIC_AI_SERVICE_URL) {
         return process.env.NEXT_PUBLIC_AI_SERVICE_URL;
     }
-    if (typeof window !== 'undefined') {
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            return 'http://localhost:8000';
-        }
+    // En producción o desarrollo, preferimos usar la variable de entorno.
+    // Si no está, asumimos proxy relativo o localhost solo en dev explícito.
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+        return 'http://localhost:8000';
     }
-    return '/ai';
+    return '/ai'; // Fallback a proxy relativo
 };
 
 const AI_SERVICE_URL = getAIServiceURL();
@@ -41,25 +41,41 @@ export const JarvisPanel = ({ causaId }: JarvisPanelProps) => {
         setError(null);
         setResponse(null);
         try {
-            // 1. Obtener CaseContext desde el backend
-            const context = await apiClient.get<any>(`/case-context/${causaId}`);
-
-            // 2. Llamar al AI Service
-            const res = await fetch(`${AI_SERVICE_URL}/jarvis/causa-360`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ modo, context }),
-            });
-
-            if (!res.ok) {
-                const text = await res.text().catch(() => res.statusText);
-                throw new Error(`Error J.A.R.V.I.S.: ${text}`);
+            // Generar prompt según el modo
+            let question = '';
+            switch (modo) {
+                case 'resumen_causa':
+                    question = 'Genera un resumen ejecutivo de esta causa, destacando los hitos más importantes y el estado actual.';
+                    break;
+                case 'proximos_pasos':
+                    question = 'Basado en el estado actual de la causa, sugiere 3 próximos pasos procesales recomendados.';
+                    break;
+                case 'explicar_riesgo':
+                    question = 'Analiza los riesgos legales y financieros de esta causa para mi cliente.';
+                    break;
+                case 'preparar_briefing':
+                    question = 'Prepara un briefing corto para una reunión con el cliente sobre esta causa.';
+                    break;
+                default:
+                    question = 'Analiza esta causa.';
             }
 
-            const data: JarvisResponse = await res.json();
-            setResponse(data);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Error desconocido al consultar J.A.R.V.I.S.');
+            // Llamar a la API (que ya incluye el contexto de la causa en el backend si se pasa causaId)
+            const res = await apiClient.post<{ reply: string; sources?: any[] }>('/jarvis/ask-causa', {
+                causaId,
+                question,
+                // El backend se encarga de inyectar el contexto de la causa
+            });
+
+            setResponse({
+                modo,
+                resultado: res.reply,
+                limitaciones: [] // Por ahora sin limitaciones explícitas
+            });
+
+        } catch (err: any) {
+            console.error('Error Jarvis:', err);
+            setError(err.message || 'Error al conectar con J.A.R.V.I.S.');
         } finally {
             setLoading(false);
         }
@@ -69,9 +85,9 @@ export const JarvisPanel = ({ causaId }: JarvisPanelProps) => {
         if (!response) return null;
         return (
             <div className="mt-4 space-y-3">
-                <pre className="text-xs bg-gray-50 border border-lex-border rounded p-3 whitespace-pre-wrap break-words">
-                    {JSON.stringify(response.resultado, null, 2)}
-                </pre>
+                <div className="text-sm text-gray-700 bg-gray-50 border border-lex-border rounded p-3 whitespace-pre-wrap break-words">
+                    {typeof response.resultado === 'string' ? response.resultado : JSON.stringify(response.resultado, null, 2)}
+                </div>
                 {response.limitaciones?.length > 0 && (
                     <div className="mt-2">
                         <p className="text-xs font-semibold text-gray-600 mb-1">Limitaciones detectadas:</p>
@@ -106,8 +122,8 @@ export const JarvisPanel = ({ causaId }: JarvisPanelProps) => {
                             type="button"
                             onClick={() => setModo(m.id as JarvisModo)}
                             className={`text-xs px-3 py-1 rounded-full border ${modo === m.id
-                                    ? 'bg-lex-primary text-white border-lex-primary'
-                                    : 'bg-white text-gray-600 border-lex-border hover:bg-gray-50'
+                                ? 'bg-lex-primary text-white border-lex-primary'
+                                : 'bg-white text-gray-600 border-lex-border hover:bg-gray-50'
                                 }`}
                         >
                             {m.label}

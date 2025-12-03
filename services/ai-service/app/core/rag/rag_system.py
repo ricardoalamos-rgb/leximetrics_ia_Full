@@ -2,7 +2,7 @@ import logging
 import uuid
 from typing import Dict, Any, List
 from app.core.ai.gemini_client import gemini_client
-from app.services.multi_source_search import multi_source_search
+from app.core.rag.multi_source_search import multi_source_search
 from app.services.telemetry import TelemetryLogger
 from app.config import settings
 

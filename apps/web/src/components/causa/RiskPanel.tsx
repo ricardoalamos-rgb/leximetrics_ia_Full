@@ -68,8 +68,13 @@ export function RiskPanel({ causaId }: RiskPanelProps) {
 
             <button
                 onClick={() => {
-                    // TODO: Implement interaction with CausaCopilot
-                    console.log('Solicitar plan a J.A.R.V.I.S.');
+                    // Navegar a la pestaña de Jarvis o abrir modal
+                    const jarvisTab = document.getElementById('jarvis-tab-trigger');
+                    if (jarvisTab) {
+                        jarvisTab.click();
+                    } else {
+                        window.location.href = `/dashboard/jarvis?context=risk_mitigation&causaId=${causaId}`;
+                    }
                 }}
                 className="w-full rounded-md bg-lex-primary/10 px-4 py-2 text-sm font-medium text-lex-primary hover:bg-lex-primary/20 transition-colors"
             >

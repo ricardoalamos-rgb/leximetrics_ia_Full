@@ -18,8 +18,9 @@ import { TemplatesModule } from './templates/templates.module';
 import { TelemetryModule } from './telemetry/telemetry.module';
 import { TenantConfigModule } from './tenant-config/tenant-config.module';
 import { JarvisModule } from './jarvis/jarvis.module';
+import { KanbanModule } from './kanban/kanban.module';
 
-import { AiTelemetryModule } from './ai-telemetry/ai-telemetry.module';
+
 import { HealthModule } from './health/health.module';
 import { RolesGuard } from './auth/roles.guard';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
@@ -29,7 +30,7 @@ import { AuthModule } from './auth/auth.module';
     imports: [
         ConfigModule.forRoot({
             isGlobal: true,
-            envFilePath: '../../../.env',
+            envFilePath: ['.env', '../../.env'],
         }),
         PrismaModule,
         CausasModule,
@@ -47,11 +48,11 @@ import { AuthModule } from './auth/auth.module';
         TemplatesModule,
         TelemetryModule,
         TenantConfigModule,
-        TenantConfigModule,
         JarvisModule,
         // AiTelemetryModule, // Deprecated, merged into TelemetryModule
         HealthModule,
         AuthModule,
+        KanbanModule,
     ],
     controllers: [],
     providers: [

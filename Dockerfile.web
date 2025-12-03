@@ -1,30 +1,46 @@
 FROM node:20-alpine AS builder
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
-COPY package*.json ./
-COPY yarn.lock ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY . .
 
-RUN yarn install --frozen-lockfile
-RUN yarn build:web
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @leximetrics/db run generate
+RUN pnpm --filter web build
 
 FROM node:20-alpine AS runner
+RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=3000
 
-COPY package*.json ./
-COPY yarn.lock ./
-RUN yarn install --frozen-lockfile --production
+# Install OpenSSL and libc6-compat for Prisma
+RUN apk add --no-cache openssl libc6-compat
 
+
+# Copy root workspace files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+# Copy app package.json to ensure dependencies are installed
+COPY apps/web/package.json ./apps/web/package.json
+COPY packages/db/package.json ./packages/db/package.json
+
+# Install prod dependencies
+RUN pnpm install --prod --frozen-lockfile
+# Generate prisma client in prod
+COPY packages/db/prisma ./packages/db/prisma
+RUN pnpm --filter @leximetrics/db run generate
+
+# Copy build output
 COPY --from=builder /app/apps/web/.next ./apps/web/.next
 COPY --from=builder /app/apps/web/public ./apps/web/public
 COPY --from=builder /app/apps/web/next.config.js ./apps/web/next.config.js
 COPY --from=builder /app/apps/web/tailwind.config.ts ./apps/web/tailwind.config.ts
 COPY --from=builder /app/apps/web/postcss.config.js ./apps/web/postcss.config.js
-COPY --from=builder /app/tsconfig.json ./tsconfig.json
 
 EXPOSE 3000
 
-CMD ["node", "apps/web/node_modules/next/dist/bin/next", "start", "apps/web", "-p", "3000"]
+# Use pnpm to start to ensure paths are correct
+CMD ["pnpm", "--filter", "web", "start", "--", "-p", "3000"]

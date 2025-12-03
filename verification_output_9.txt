@@ -1,0 +1,20 @@
+Loaded PjudScraper from: /Users/ricardoalamossantacruz/Desktop/Antigravity/leximetrics-ia/services/scraper-service/app/scraper/pjud.py
+sys.path: ['/Users/ricardoalamossantacruz/Desktop/Antigravity/leximetrics-ia/services/scraper-service', '/Library/Frameworks/Python.framework/Versions/3.14/lib/python314.zip', '/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14', '/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/lib-dynload', '/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages', '/Users/ricardoalamossantacruz/Desktop/Antigravity/leximetrics-ia/services/scraper-service/app']
+Starting Scraper Verification...
+Traceback (most recent call last):
+  File "/Users/ricardoalamossantacruz/Desktop/Antigravity/leximetrics-ia/services/scraper-service/verify_scraper.py", line 59, in <module>
+    asyncio.run(main())
+    ~~~~~~~~~~~^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py", line 204, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/Users/ricardoalamossantacruz/Desktop/Antigravity/leximetrics-ia/services/scraper-service/verify_scraper.py", line 19, in main
+    async with scraper:
+               ^^^^^^^
+TypeError: 'scraper.pjud.PjudScraper' object does not support the asynchronous context manager protocol (missed __aexit__ method)

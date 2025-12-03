@@ -1,6 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { JarvisChat } from '@/components/jarvis/JarvisChat';
+import { apiClient } from '@/lib/api';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Loader2, Activity, Database, Server, MessageSquare, BarChart3, CheckCircle2, XCircle } from 'lucide-react';
 
 interface SourceTelemetry {
     source_type: string;
@@ -19,8 +24,6 @@ interface ScrapersHealth {
     scielo: { ok: boolean; error?: string };
 }
 
-import { JarvisChat } from '@/components/jarvis/JarvisChat';
-
 export default function JarvisDashboardPage() {
     const [data, setData] = useState<SourceTelemetry[]>([]);
     const [indexing, setIndexing] = useState<IndexingStatus | null>(null);
@@ -33,20 +36,14 @@ export default function JarvisDashboardPage() {
             try {
                 setLoading(true);
                 const [resSources, resIndexing, resScrapers] = await Promise.all([
-                    fetch('/api/jarvis/telemetry/sources'),
-                    fetch('/api/jarvis/telemetry/indexing'),
-                    fetch('/api/jarvis/telemetry/scrapers-health'),
+                    apiClient.get<SourceTelemetry[]>('/jarvis/telemetry/sources'),
+                    apiClient.get<IndexingStatus>('/jarvis/telemetry/indexing'),
+                    apiClient.get<ScrapersHealth>('/jarvis/telemetry/scrapers-health'),
                 ]);
 
-                const bodySources = await resSources.json();
-                const bodyIndexing = await resIndexing.json();
-                const bodyScrapers = await resScrapers.json();
-
-                if (!resSources.ok) throw new Error(bodySources.error || 'Error sources');
-
-                setData(bodySources as SourceTelemetry[]);
-                setIndexing(bodyIndexing);
-                setScrapers(bodyScrapers);
+                setData(resSources);
+                setIndexing(resIndexing);
+                setScrapers(resScrapers);
             } catch (err) {
                 console.error('[JARVIS telemetry] error:', err);
                 setError(
@@ -63,26 +60,24 @@ export default function JarvisDashboardPage() {
     }, []);
 
     if (loading) {
-        return <div>Cargando telemetría de JARVIS...</div>;
-    }
-
-    if (error) {
         return (
-            <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-                Error: {error}
+            <div className="flex h-[50vh] items-center justify-center flex-col gap-4">
+                <Loader2 className="w-10 h-10 animate-spin text-lex-brand" />
+                <span className="text-lex-brand font-medium animate-pulse">Conectando con J.A.R.V.I.S...</span>
             </div>
         );
     }
 
-    if (!data.length && !indexing && !scrapers) {
+    if (error) {
         return (
-            <div className="space-y-4">
-                <h1 className="text-2xl font-bold text-lex-text">
-                    J.A.R.V.I.S. – Telemetría de Fuentes
-                </h1>
-                <p className="text-gray-600">
-                    Todavía no hay datos disponibles.
-                </p>
+            <div className="p-6">
+                <div className="rounded-xl bg-red-50 p-6 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900 shadow-sm">
+                    <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
+                        <XCircle className="w-5 h-5" />
+                        Error de Conexión
+                    </h3>
+                    <p>{error}</p>
+                </div>
             </div>
         );
     }
@@ -90,152 +85,132 @@ export default function JarvisDashboardPage() {
     const total = data.reduce((acc, d) => acc + d.count, 0);
 
     return (
-        <div className="space-y-6 pb-20">
-            <div>
-                <h1 className="text-2xl font-bold text-lex-text">
-                    J.A.R.V.I.S. – Telemetría y Salud
-                </h1>
-                <p className="text-gray-600 mt-1">
-                    Estado de fuentes, indexación y scrapers externos.
-                </p>
+        <div className="h-[calc(100vh-6rem)] flex flex-col animate-fade-in pb-4">
+            <div className="flex items-center justify-between mb-4 shrink-0">
+                <div>
+                    <h1 className="text-2xl font-extrabold bg-gradient-to-r from-lex-brand to-purple-600 bg-clip-text text-transparent">
+                        J.A.R.V.I.S.
+                    </h1>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                        Asistente Legal Inteligente
+                    </p>
+                </div>
             </div>
 
-            {/* Scrapers Health */}
-            {scrapers && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className={`p-4 rounded-lg border ${scrapers.pjud.ok ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                        <div className="flex items-center justify-between">
-                            <span className="font-semibold text-gray-700">PJUD Scraper</span>
-                            <span className="text-xl">{scrapers.pjud.ok ? '✅' : '❌'}</span>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0">
+                {/* Left Column: Chat (Primary Focus) */}
+                <div className="lg:col-span-8 flex flex-col min-h-0">
+                    <Card className="flex-1 flex flex-col overflow-hidden border-lex-brand/20 shadow-lg">
+                        <CardHeader className="bg-gradient-to-r from-gray-50 to-white dark:from-slate-800 dark:to-slate-900 border-b border-gray-100 dark:border-gray-700 py-3 px-4 shrink-0">
+                            <CardTitle className="flex items-center gap-2 text-base">
+                                <MessageSquare className="w-4 h-4 text-lex-brand" />
+                                Chat con J.A.R.V.I.S.
+                            </CardTitle>
+                        </CardHeader>
+                        <div className="flex-1 overflow-hidden">
+                            <JarvisChat placeholder="Pregunta sobre tus causas, leyes o redacción de escritos..." />
                         </div>
-                        {!scrapers.pjud.ok && <p className="text-xs text-red-600 mt-1">{scrapers.pjud.error}</p>}
-                    </div>
-                    <div className={`p-4 rounded-lg border ${scrapers.bcn.ok ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                        <div className="flex items-center justify-between">
-                            <span className="font-semibold text-gray-700">BCN Scraper</span>
-                            <span className="text-xl">{scrapers.bcn.ok ? '✅' : '❌'}</span>
-                        </div>
-                        {!scrapers.bcn.ok && <p className="text-xs text-red-600 mt-1">{scrapers.bcn.error}</p>}
-                    </div>
-                    <div className={`p-4 rounded-lg border ${scrapers.scielo.ok ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                        <div className="flex items-center justify-between">
-                            <span className="font-semibold text-gray-700">SciELO Scraper</span>
-                            <span className="text-xl">{scrapers.scielo.ok ? '✅' : '❌'}</span>
-                        </div>
-                        {!scrapers.scielo.ok && <p className="text-xs text-red-600 mt-1">{scrapers.scielo.error}</p>}
-                    </div>
+                    </Card>
                 </div>
-            )}
 
-            {/* Indexing Status */}
-            {indexing && (
-                <div className="bg-white rounded-lg border border-lex-border p-6 shadow-sm">
-                    <h3 className="text-lg font-semibold text-lex-text mb-4">Estado de Indexación (RAG Local)</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                        {Object.entries(indexing.counts).map(([key, count]) => (
-                            <div key={key} className="bg-gray-50 p-3 rounded border border-gray-200 text-center">
-                                <p className="text-xs text-gray-500 uppercase font-medium mb-1">{key.replace('_', ' ')}</p>
-                                <p className="text-xl font-bold text-lex-primary">{count}</p>
-                                <p className="text-[10px] text-gray-400">chunks</p>
+                {/* Right Column: Stats & Telemetry (Compact) */}
+                <div className="lg:col-span-4 flex flex-col gap-4 overflow-y-auto pr-1">
+                    {/* Compact Scrapers Health */}
+                    {scrapers && (
+                        <div className="grid grid-cols-3 gap-2">
+                            <Card className={`border-l-2 ${scrapers.pjud.ok ? 'border-l-green-500' : 'border-l-red-500'} shadow-sm`}>
+                                <div className="p-2 flex flex-col items-center justify-center text-center">
+                                    <Server className={`w-4 h-4 mb-1 ${scrapers.pjud.ok ? 'text-green-600' : 'text-red-600'}`} />
+                                    <span className="text-[10px] font-bold text-gray-600 dark:text-gray-300">PJUD</span>
+                                </div>
+                            </Card>
+                            <Card className={`border-l-2 ${scrapers.bcn.ok ? 'border-l-green-500' : 'border-l-red-500'} shadow-sm`}>
+                                <div className="p-2 flex flex-col items-center justify-center text-center">
+                                    <Database className={`w-4 h-4 mb-1 ${scrapers.bcn.ok ? 'text-green-600' : 'text-red-600'}`} />
+                                    <span className="text-[10px] font-bold text-gray-600 dark:text-gray-300">BCN</span>
+                                </div>
+                            </Card>
+                            <Card className={`border-l-2 ${scrapers.scielo.ok ? 'border-l-green-500' : 'border-l-red-500'} shadow-sm`}>
+                                <div className="p-2 flex flex-col items-center justify-center text-center">
+                                    <Activity className={`w-4 h-4 mb-1 ${scrapers.scielo.ok ? 'text-green-600' : 'text-red-600'}`} />
+                                    <span className="text-[10px] font-bold text-gray-600 dark:text-gray-300">SciELO</span>
+                                </div>
+                            </Card>
+                        </div>
+                    )}
+
+                    {/* Compact Metrics */}
+                    <Card className="shadow-sm">
+                        <CardHeader className="py-3 px-4 border-b border-gray-100 dark:border-gray-800">
+                            <CardTitle className="text-sm flex items-center gap-2">
+                                <BarChart3 className="w-4 h-4 text-lex-brand" />
+                                Métricas Rápidas
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="grid grid-cols-2 divide-x divide-gray-100 dark:divide-gray-800 border-b border-gray-100 dark:border-gray-800">
+                                <div className="p-3 text-center">
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-wider">Consultas</p>
+                                    <p className="text-xl font-bold text-lex-brand">{total}</p>
+                                </div>
+                                <div className="p-3 text-center">
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-wider">Relevancia</p>
+                                    <p className="text-xl font-bold text-green-600">
+                                        {data.length > 0 ? (data.reduce((acc, curr) => acc + curr.avg_relevance, 0) / data.length).toFixed(0) : 0}%
+                                    </p>
+                                </div>
                             </div>
-                        ))}
-                    </div>
-                </div>
-            )}
+                            {indexing && (
+                                <div className="p-3 bg-gray-50 dark:bg-slate-800/50">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Indexación RAG</span>
+                                        <span className="text-xs font-bold text-lex-brand">{indexing.indexing_progress ?? 0}%</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-lex-brand rounded-full"
+                                            style={{ width: `${indexing.indexing_progress ?? 0}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
 
-            {/* Resumen general */}
-            <div className="bg-white rounded-lg border border-lex-border p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                    <p className="text-sm text-gray-500">Consultas totales registradas</p>
-                    <p className="text-3xl font-bold text-lex-text">{total}</p>
-                </div>
-                <div>
-                    <p className="text-sm text-gray-500">
-                        Fuente más utilizada (por conteo)
-                    </p>
-                    <p className="text-lg font-semibold text-lex-accent">
-                        {data
-                            .slice()
-                            .sort((a, b) => b.count - a.count)[0]?.source_type || '-'}
-                    </p>
-                </div>
-                <div>
-                    <p className="text-sm text-gray-500">
-                        Mejor relevancia promedio (↑)
-                    </p>
-                    <p className="text-lg font-semibold text-lex-success">
-                        {data
-                            .slice()
-                            .sort((a, b) => b.avg_relevance - a.avg_relevance)[0]
-                            ?.source_type || '-'}
-                    </p>
-                </div>
-            </div>
-
-            {/* Tabla detallada */}
-            <div className="bg-white shadow-sm rounded-lg border border-lex-border overflow-hidden">
-                <table className="min-w-full divide-y divide-lex-border">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Fuente
-                            </th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Consultas
-                            </th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Relevancia Promedio
-                            </th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Peso relativo
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-lex-border">
-                        {data.map((row) => {
-                            const percentage = total > 0 ? (row.count / total) * 100 : 0;
-                            return (
-                                <tr key={row.source_type}>
-                                    <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-lex-text">
-                                        {row.source_type}
-                                    </td>
-                                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                                        {row.count}
-                                    </td>
-                                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                                        {row.avg_relevance.toFixed(1)}%
-                                    </td>
-                                    <td className="px-4 py-2 text-sm text-gray-700">
-                                        <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                                            <div
-                                                className="h-2 rounded-full bg-lex-accent"
-                                                style={{ width: `${percentage.toFixed(1)}%` }}
-                                            />
-                                        </div>
-                                        <span className="text-xs text-gray-500">
-                                            {percentage.toFixed(1)}% de las consultas
-                                        </span>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-            </div>
-
-            <p className="text-xs text-gray-500">
-                Datos originados desde J.A.R.V.I.S. 4.0 (FastAPI + SQLite
-                de telemetría), usando el endpoint <code>/telemetry/sources</code>.
-            </p>
-
-            {/* Chat de Prueba */}
-            <div className="bg-white rounded-lg border border-lex-border shadow-sm overflow-hidden h-[600px] flex flex-col">
-                <div className="p-4 border-b border-lex-border bg-gray-50">
-                    <h3 className="text-lg font-semibold text-lex-text">Probar J.A.R.V.I.S. + Feedback</h3>
-                    <p className="text-sm text-gray-500">Haz una consulta y califica la respuesta para entrenar el modelo.</p>
-                </div>
-                <div className="flex-1 overflow-hidden">
-                    <JarvisChat placeholder="Pregunta algo sobre derecho chileno..." />
+                    {/* Compact Source Table */}
+                    <Card className="flex-1 shadow-sm flex flex-col min-h-0">
+                        <CardHeader className="py-3 px-4 border-b border-gray-100 dark:border-gray-800">
+                            <CardTitle className="text-sm">Fuentes de Conocimiento</CardTitle>
+                        </CardHeader>
+                        <div className="overflow-y-auto flex-1 p-0">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="hover:bg-transparent">
+                                        <TableHead className="h-8 text-xs">Fuente</TableHead>
+                                        <TableHead className="h-8 text-xs text-right">Uso</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {data.map((row) => (
+                                        <TableRow key={row.source_type} className="hover:bg-gray-50 dark:hover:bg-slate-800/50">
+                                            <TableCell className="py-2 text-xs font-medium">
+                                                {row.source_type}
+                                                <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1 mt-1">
+                                                    <div
+                                                        className={`h-full rounded-full ${row.avg_relevance > 80 ? 'bg-green-500' : 'bg-yellow-500'}`}
+                                                        style={{ width: `${row.avg_relevance}%` }}
+                                                    />
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="py-2 text-xs text-right">
+                                                {row.count}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </Card>
                 </div>
             </div>
         </div>

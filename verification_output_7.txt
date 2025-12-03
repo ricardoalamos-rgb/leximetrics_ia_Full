@@ -1,0 +1,67 @@
+Loaded PjudScraper from: /Users/ricardoalamossantacruz/Desktop/Antigravity/leximetrics-ia/services/scraper-service/app/scraper/pjud.py
+sys.path: ['/Users/ricardoalamossantacruz/Desktop/Antigravity/leximetrics-ia/services/scraper-service', '/Library/Frameworks/Python.framework/Versions/3.14/lib/python314.zip', '/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14', '/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/lib-dynload', '/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages', '/Users/ricardoalamossantacruz/Desktop/Antigravity/leximetrics-ia/services/scraper-service/app']
+Starting Scraper Verification...
+
+--- 1. Testing Login with Clave Única ---
+Navegando a OJV...
+Verificando modal...
+Cerrando modal...
+Click en Clave Única...
+Esperando redirección a Clave Única...
+Intentando obtener URL de Clave Única...
+Link attributes - href: #, onclick: getURL()
+Analizando función getURL()...
+getURL definition: function getURL() {
+                $.ajax({
+                url: "../claveunica/loginurl?ts=" + new Date().getTime(),
+                    type: 'get'
+                }).done(function (data) {
+                    if (data != null) {
+                        window.location.href="https://accounts.claveunica.gob.cl/api/v1/accounts/app/logout";
+                        setTimeout(function(){
+                            window.location.href = data;
+                        }, 800);
+                    }
+                });
+            }
+URL actual tras getURL: https://accounts.claveunica.gob.cl/accounts/login/?next=/openid/authorize%3Fclient_id%3Dae4caa1cb2154cac89440f3fe18251cb%26redirect_uri%3Dhttps%253A%252F%252Fojv.pjud.cl%252Fkpitec-ojv-web%252Fclaveunica%252Fcallback%26response_type%3Dcode%26scope%3Dopenid%2Brun%2Bname%26state%3DAokfJ85TbMsWQG7h%252FX2b6w%253D%253D
+Navegación exitosa (detectada tras sleep).
+Llenando credenciales...
+Click en INGRESA...
+Botón sigue deshabilitado, intentando forzar habilitación...
+Esperando redirección post-login...
+Verificando carga del dashboard...
+Modal de roles sigue visible (intento 2), reintentando selección...
+Dashboard cargado exitosamente.
+Items del sidebar detectados:  Trámite Fácil
+ Mantenedor
+ Ingresar Demanda/Recurso
+ Ingresar Escrito
+ Ingresar Contesta Oficio
+ Ba...
+Login exitoso con Clave Única
+✅ Login successful.
+
+--- 2. Testing Navigation to 'Mis Causas' ---
+Navegando a Mis Causas...
+Verificando popups bloqueantes...
+'Mis Causas' no visible. Buscando 'Todos los servicios'...
+ADVERTENCIA: No se encontró 'Todos los servicios' en la vista actual.
+Intentando navegar explícitamente a URL de inicio: https://oficinajudicialvirtual.pjud.cl/home/index.php
+Error verificando sidebar/todos servicios: Timeout 30000ms exceeded.
+Error navegando a Mis Causas: Locator.inner_text: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("#list-menu")
+
+❌ Failed to navigate to Mis Causas.
+
+--- 4. Testing Navigation to 'Ingreso de Demandas' ---
+Navegando a Ingreso de Demandas...
+Verificando popups bloqueantes...
+Error navegando a Ingreso de Demandas: Page.wait_for_selector: Timeout 15000ms exceeded.
+Call log:
+  - waiting for locator("#list-menu a") to be visible
+
+❌ Failed to navigate to Ingreso de Demandas.
+
+Verification Complete.

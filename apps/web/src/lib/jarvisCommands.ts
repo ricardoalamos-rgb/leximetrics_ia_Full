@@ -1,6 +1,6 @@
-import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context';
+import { useRouter } from 'next/navigation';
 
-export function handleJarvisCommand(text: string, router: AppRouterInstance): string {
+export function handleJarvisCommand(text: string, router: ReturnType<typeof useRouter>): string {
     const t = text.toLowerCase();
 
     if (t.includes('docworks')) {

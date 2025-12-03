@@ -9,11 +9,17 @@
         "studio": "prisma studio"
     },
     "dependencies": {
-        "@prisma/client": "^5.10.2"
+        "@prisma/client": "^5.10.2",
+        "prisma": "^5.10.2"
     },
     "devDependencies": {
-        "prisma": "^5.10.2",
-        "typescript": "^5.3.3",
-        "@types/node": "^20.11.24"
+        "@types/bcryptjs": "^3.0.0",
+        "@types/node": "^20.11.24",
+        "bcryptjs": "^3.0.3",
+        "ts-node": "^10.9.1",
+        "typescript": "^5.3.3"
+    },
+    "prisma": {
+        "seed": "ts-node prisma/seed.ts"
     }
 }

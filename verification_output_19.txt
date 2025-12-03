@@ -1,0 +1,64 @@
+Loaded PjudScraper from: /Users/ricardoalamossantacruz/Desktop/Antigravity/leximetrics-ia/services/scraper-service/app/scraper/pjud.py
+sys.path: ['/Users/ricardoalamossantacruz/Desktop/Antigravity/leximetrics-ia/services/scraper-service', '/Library/Frameworks/Python.framework/Versions/3.14/lib/python314.zip', '/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14', '/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/lib-dynload', '/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages', '/Users/ricardoalamossantacruz/Desktop/Antigravity/leximetrics-ia/services/scraper-service/app']
+Starting Scraper Verification...
+
+--- 1. Testing Login with Clave Única ---
+Navegando a https://oficinajudicialvirtual.pjud.cl/home/index.php...
+Cerrando aviso inicial del portal...
+Buscando botón 'Todos los servicios'...
+Clic en 'Clave Única'...
+Redirección a Clave Única iniciada...
+Llenando credenciales Clave Única...
+Click en INGRESA...
+Esperando redirección post-login...
+Verificando carga del dashboard...
+Dashboard cargado exitosamente.
+Items del sidebar detectados:  Mis Causas
+ Agenda de receptores
+ Mis Notificaciones
+ Mis Audiencias
+ Mi Estado Diario
+ Mi Certific...
+✅ Login successful.
+
+--- 2. Testing Navigation to 'Mis Causas' ---
+Navegando a Mis Causas...
+Verificando popups bloqueantes...
+'Mis Causas' ya es visible en el sidebar.
+Click en 'Mis Causas'...
+✅ Navigated to Mis Causas.
+
+--- 3. Testing Search Form in 'Mis Causas' ---
+Buscando causa RIT: C-123-2024, Año: 2024 en Mis Causas...
+No se encontró input para RIT
+Error en search_mis_causas: Locator.fill: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("input[name='ERA'], input[name='ANIO'], input[id*='era'], input[placeholder*='Año']").first
+    - locator resolved to <input type="text" maxlength="4" placeholder="Año" id="anhoMisCauSup" title="ingrese año" name="anhoMisCauSup" class="form-control inptNum"/>
+    - fill("2024")
+  - attempting fill action
+    2 × waiting for element to be visible, enabled and editable
+      - element is not visible
+    - retrying fill action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and editable
+      - element is not visible
+    - retrying fill action
+      - waiting 100ms
+    60 × waiting for element to be visible, enabled and editable
+       - element is not visible
+     - retrying fill action
+       - waiting 500ms
+
+
+--- 4. Testing Navigation to 'Ingreso de Demandas' ---
+Navegando a Ingreso de Demandas...
+Verificando popups bloqueantes...
+Verificando existencia de ingresoDemanYEscritos()...
+Tipo de ingresoDemanYEscritos: function
+Ejecutando ingresoDemanYEscritos()...
+No se detectó .pg_competencia tras navegación.
+Breadcrumb actual: Mis Causas
+❌ Failed to navigate to Ingreso de Demandas.
+
+Verification Complete.

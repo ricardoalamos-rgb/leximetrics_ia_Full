@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { apiClient } from '@/lib/api';
-import { useJarvisVoice } from '@/components/jarvis/JarvisVoice';
 
 interface Message {
     role: 'user' | 'assistant';
@@ -27,8 +26,6 @@ export function JarvisChat({
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [voiceEnabled, setVoiceEnabled] = useState(false);
-    const { speak, cancel, supported } = useJarvisVoice();
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -49,7 +46,7 @@ export function JarvisChat({
         setError(null);
 
         try {
-            const response = await apiClient.post<{ reply: string; audio_url?: string; correlation_id?: string }>('/jarvis/causa-chat', {
+            const response = await apiClient.post<{ reply: string; correlation_id?: string }>('/jarvis/ask-causa', {
                 causaId: causaId || null,
                 messages: [...messages, userMessage],
                 context,
@@ -62,10 +59,6 @@ export function JarvisChat({
             };
 
             setMessages((prev) => [...prev, assistantMessage]);
-
-            if (voiceEnabled) {
-                speak({ text: assistantMessage.content, audioUrl: response.audio_url });
-            }
         } catch (err) {
             console.error('Error sending message to Jarvis:', err);
             setError('Error al conectar con J.A.R.V.I.S.');
@@ -87,8 +80,6 @@ export function JarvisChat({
                 correlationId,
                 useful,
             });
-            // Optional: Show a toast or update UI to show feedback was sent
-            // For now, we just log it
             console.log('Feedback sent:', useful);
         } catch (err) {
             console.error('Error sending feedback:', err);
@@ -109,23 +100,6 @@ export function JarvisChat({
                     </div>
                 )}
 
-                {supported && messages.length > 0 && (
-                    <div className="absolute top-4 right-4 z-10">
-                        <button
-                            onClick={() => {
-                                if (voiceEnabled) cancel();
-                                setVoiceEnabled(!voiceEnabled);
-                            }}
-                            className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium shadow-sm transition-colors ${voiceEnabled
-                                ? 'bg-lex-primary/10 text-lex-primary border border-lex-primary/20'
-                                : 'bg-white text-gray-500 border border-gray-200 dark:bg-slate-800 dark:text-gray-400 dark:border-gray-700'
-                                }`}
-                        >
-                            <span>{voiceEnabled ? '🔊 Voz ON' : '🔇 Voz OFF'}</span>
-                        </button>
-                    </div>
-                )}
-
                 {messages.map((msg, idx) => (
                     <div
                         key={idx}
@@ -138,15 +112,6 @@ export function JarvisChat({
                                 }`}
                         >
                             <div className="whitespace-pre-wrap">{msg.content}</div>
-                            {msg.role === 'assistant' && supported && (
-                                <button
-                                    onClick={() => speak({ text: msg.content })}
-                                    className="mt-2 text-xs opacity-50 hover:opacity-100"
-                                    title="Leer en voz alta"
-                                >
-                                    🔊
-                                </button>
-                            )}
                             {msg.role === 'assistant' && msg.correlationId && (
                                 <div className="mt-2 flex gap-2 text-xs text-gray-500 border-t border-gray-200 pt-2 dark:border-gray-700">
                                     <span>¿Te fue útil?</span>

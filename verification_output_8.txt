@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/Users/ricardoalamossantacruz/Desktop/Antigravity/leximetrics-ia/services/scraper-service/verify_scraper.py", line 10, in <module>
+    from scraper.pjud import PjudScraper
+  File "/Users/ricardoalamossantacruz/Desktop/Antigravity/leximetrics-ia/services/scraper-service/app/scraper/pjud.py", line 89
+    sidebar = self.page.locator("#list-menu")
+IndentationError: unexpected indent

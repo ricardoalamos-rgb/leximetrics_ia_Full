@@ -26,14 +26,7 @@ EMBEDDING_MODEL_NAME: str = os.getenv(
 
 TOP_K_RESULTS: int = int(os.getenv("JARVIS_TOP_K_RESULTS", "5"))
 
-# --- TTS (voz masculina estilo Jarvis) ---
-TTS_ENABLED: bool = os.getenv("JARVIS_TTS_ENABLED", "true").lower() == "true"
-TTS_LANG: str = os.getenv("JARVIS_TTS_LANG", "es")  # Español base
-TTS_SPEED: float = float(os.getenv("JARVIS_TTS_SPEED", "0.95"))  # Un poco más lento
-TTS_PITCH_SHIFT: float = float(os.getenv("JARVIS_TTS_PITCH_SHIFT", "0.90"))
-# < 1.0 = voz más grave (bajamos pitch), > 1.0 = más aguda
-TTS_CACHE_DIR: Path = BASE_DIR / "audio_cache"
-TTS_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
 
 # --- GENERAL ---
 SERVICE_NAME: str = "JARVIS 4.0 - Leximetrics"

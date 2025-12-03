@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { apiClient } from '@/lib/api';
 import { Causa } from '@leximetrics/db';
-import { useJarvisVoice } from '@/components/jarvis/JarvisVoice';
 
 // Use a type compatible with Causa but flexible for the prompt's requirements
 interface CausaCopilotProps {
@@ -22,8 +21,6 @@ export function CausaCopilot({ causa }: CausaCopilotProps) {
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [voiceEnabled, setVoiceEnabled] = useState(false);
-    const { speak, cancel, supported } = useJarvisVoice();
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -65,10 +62,6 @@ export function CausaCopilot({ causa }: CausaCopilotProps) {
             };
 
             setMessages((prev) => [...prev, assistantMessage]);
-
-            if (voiceEnabled) {
-                speak({ text: assistantMessage.content });
-            }
         } catch (err) {
             console.error('Error sending message to Jarvis:', err);
             setError('Error al conectar con J.A.R.V.I.S. Por favor, intenta nuevamente.');
@@ -102,22 +95,6 @@ export function CausaCopilot({ causa }: CausaCopilotProps) {
                     Estoy viendo la causa <span className="font-medium text-lex-primary">{causa.snumcaso || causa.rol}</span> contra{' '}
                     <span className="font-medium text-lex-primary">{causa.nombreDeudor || 'Deudor'}</span>. Puedo ayudarte con estrategia, escritos y riesgos.
                 </p>
-                {supported && (
-                    <div className="mt-2 flex justify-end">
-                        <button
-                            onClick={() => {
-                                if (voiceEnabled) cancel();
-                                setVoiceEnabled(!voiceEnabled);
-                            }}
-                            className={`flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium transition-colors ${voiceEnabled
-                                ? 'bg-lex-primary/10 text-lex-primary'
-                                : 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-gray-400'
-                                }`}
-                        >
-                            <span>{voiceEnabled ? '🔊 Voz ON' : '🔇 Voz OFF'}</span>
-                        </button>
-                    </div>
-                )}
             </div>
 
             {/* Messages Area */}
@@ -141,15 +118,6 @@ export function CausaCopilot({ causa }: CausaCopilotProps) {
                                 }`}
                         >
                             <div className="whitespace-pre-wrap">{msg.content}</div>
-                            {msg.role === 'assistant' && supported && (
-                                <button
-                                    onClick={() => speak({ text: msg.content })}
-                                    className="mt-2 text-xs opacity-50 hover:opacity-100"
-                                    title="Leer en voz alta"
-                                >
-                                    🔊
-                                </button>
-                            )}
                         </div>
                     </div>
                 ))}

@@ -121,30 +121,60 @@ export default function DashboardPage() {
     return (
         <div className="space-y-8">
             {/* Hero Section */}
-            <section className="rounded-2xl bg-gradient-to-r from-lex-primary to-lex-accent p-8 text-white shadow-lg">
-                <h1 className="text-3xl font-bold">Bienvenida de vuelta 👋</h1>
-                <p className="mt-2 text-lg text-blue-100">
-                    Este es tu panel de control IA. ¿Qué quieres lograr hoy?
-                </p>
-                <div className="mt-6 flex flex-wrap gap-4">
-                    <Link
-                        href="/dashboard/causas"
-                        className="rounded-lg bg-white/20 px-4 py-2 font-medium text-white backdrop-blur-sm transition-colors hover:bg-white/30"
-                    >
-                        Buscar una causa
-                    </Link>
-                    <Link
-                        href="/dashboard/jarvis"
-                        className="rounded-lg bg-white px-4 py-2 font-medium text-lex-primary transition-colors hover:bg-blue-50"
-                    >
-                        Hablar con J.A.R.V.I.S.
-                    </Link>
-                    <Link
-                        href="/dashboard/docworks"
-                        className="rounded-lg bg-white/20 px-4 py-2 font-medium text-white backdrop-blur-sm transition-colors hover:bg-white/30"
-                    >
-                        Generar documento (DocWorks)
-                    </Link>
+            <section className="relative rounded-3xl bg-gradient-to-r from-lex-brand via-lex-brand-light to-lex-vibrant-cyan p-10 text-white shadow-2xl overflow-hidden animate-fade-in">
+                {/* Background Decorations */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-lex-vibrant-green/20 rounded-full blur-3xl animate-pulse-slow"></div>
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-lex-gold/20 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
+
+                <div className="relative z-10">
+                    <div className="flex items-start justify-between">
+                        <div>
+                            <h1 className="text-4xl font-extrabold mb-3 tracking-tight">¡Bienvenido de vuelta! 👋</h1>
+                            <p className="text-lg text-blue-100 font-medium max-w-2xl">
+                                Este es tu panel de control IA. Gestiona causas, genera documentos y mantén todo bajo control.
+                            </p>
+                        </div>
+                        <div className="hidden lg:block">
+                            <div className="glass-strong rounded-2xl px-6 py-3 border border-white/30">
+                                <p className="text-sm font-semibold text-white/90">Sistema Activo</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <div className="w-2 h-2 bg-lex-vibrant-green rounded-full animate-pulse"></div>
+                                    <span className="text-xs text-white/80">Online</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-8 flex flex-wrap gap-4">
+                        <Link
+                            href="/dashboard/causas"
+                            className="group rounded-xl glass px-6 py-3 font-semibold text-white transition-all duration-300 hover:scale-105 hover:shadow-xl border border-white/30"
+                        >
+                            <span className="flex items-center gap-2">
+                                Buscar una causa
+                                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </span>
+                        </Link>
+                        <Link
+                            href="/dashboard/jarvis"
+                            className="rounded-xl bg-white px-6 py-3 font-semibold text-lex-brand transition-all duration-300 hover:scale-105 hover:shadow-xl hover:bg-lex-vibrant-cyan hover:text-white"
+                        >
+                            Hablar con J.A.R.V.I.S.
+                        </Link>
+                        <Link
+                            href="/dashboard/docworks"
+                            className="group rounded-xl glass px-6 py-3 font-semibold text-white transition-all duration-300 hover:scale-105 hover:shadow-xl border border-white/30"
+                        >
+                            <span className="flex items-center gap-2">
+                                Generar documento
+                                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </span>
+                        </Link>
+                    </div>
                 </div>
             </section>
 
@@ -158,18 +188,18 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                 {/* Distribution Chart */}
-                <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-slate-800 lg:col-span-1">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Distribución por Estado</h3>
-                    <div className="space-y-3">
+                <div className="rounded-2xl border-2 border-white/50 dark:border-gray-700 bg-gradient-to-br from-white via-blue-50/30 to-white dark:from-slate-800 dark:to-slate-800 p-8 shadow-medium hover:shadow-hard transition-all duration-300 lg:col-span-1 animate-slide-right">
+                    <h3 className="text-xl font-bold bg-gradient-to-r from-lex-brand to-lex-vibrant-cyan bg-clip-text text-transparent mb-6">Distribución por Estado</h3>
+                    <div className="space-y-4">
                         {sortedEstados.map(([estado, count]) => (
-                            <div key={estado}>
-                                <div className="flex justify-between text-sm mb-1">
-                                    <span className="text-gray-600 dark:text-gray-300">{estado}</span>
-                                    <span className="font-medium text-gray-900 dark:text-white">{count}</span>
+                            <div key={estado} className="group">
+                                <div className="flex justify-between text-sm mb-2">
+                                    <span className="font-medium text-gray-700 dark:text-gray-300">{estado}</span>
+                                    <span className="font-bold text-gray-900 dark:text-white">{count}</span>
                                 </div>
-                                <div className="h-2 w-full rounded-full bg-gray-100 dark:bg-gray-700">
+                                <div className="h-3 w-full rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
                                     <div
-                                        className={`h-2 rounded-full ${getEstadoColor(estado)}`}
+                                        className={`h-3 rounded-full ${getEstadoColor(estado)} transition-all duration-700 group-hover:shadow-lg`}
                                         style={{ width: `${(count / maxCount) * 100}%` }}
                                     ></div>
                                 </div>
@@ -179,42 +209,42 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Causes Table */}
-                <div className="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-slate-800 lg:col-span-2 overflow-hidden">
-                    <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Causas Recientes</h3>
+                <div className="rounded-2xl border-2 border-white/50 dark:border-gray-700 bg-white dark:bg-slate-800 shadow-medium hover:shadow-hard transition-all duration-300 lg:col-span-2 overflow-hidden animate-slide-left">
+                    <div className="border-b-2 border-gray-100 dark:border-gray-700 px-8 py-5 bg-gradient-to-r from-gray-50 to-blue-50/30 dark:from-slate-900 dark:to-slate-800">
+                        <h3 className="text-xl font-bold bg-gradient-to-r from-lex-brand to-lex-vibrant-cyan bg-clip-text text-transparent">Causas Recientes</h3>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead className="bg-gray-50 dark:bg-gray-900/50">
+                            <thead className="bg-gradient-to-r from-gray-50 to-blue-50/20 dark:from-gray-900/50 dark:to-slate-800">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Rol / Tribunal</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Carátula</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Estado</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Última Gestión</th>
-                                    <th className="relative px-6 py-3"><span className="sr-only">Ver</span></th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Rol / Tribunal</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Carátula</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Estado</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Última Gestión</th>
+                                    <th className="relative px-6 py-4"><span className="sr-only">Ver</span></th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200 dark:bg-slate-800 dark:divide-gray-700">
+                            <tbody className="bg-white divide-y divide-gray-100 dark:bg-slate-800 dark:divide-gray-700">
                                 {causas.slice(0, 5).map((causa) => (
-                                    <tr key={causa.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                    <tr key={causa.id} className="hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-cyan-50/30 dark:hover:from-gray-700/30 dark:hover:to-gray-700/50 transition-all duration-200">
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-gray-900 dark:text-white">{causa.rol}</div>
+                                            <div className="text-sm font-semibold text-gray-900 dark:text-white">{causa.rol}</div>
                                             <div className="text-xs text-gray-500 dark:text-gray-400">{causa.tribunal}</div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="text-sm text-gray-900 dark:text-white line-clamp-1">{causa.caratula}</div>
+                                            <div className="text-sm text-gray-900 dark:text-white font-medium line-clamp-1">{causa.caratula}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getEstadoColor(causa.estado).replace('bg-', 'bg-opacity-20 text-').replace('500', '800').replace('600', '800').replace('400', '800')}`}>
+                                            <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${getEstadoColor(causa.estado).replace('bg-', 'bg-opacity-20 text-').replace('500', '800').replace('600', '800').replace('400', '800')} border-2 ${getEstadoColor(causa.estado).replace('bg-', 'border-').replace('500', '300').replace('600', '300').replace('400', '300')}`}>
                                                 {causa.estado}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400 font-medium">
                                             {causa.ultimaGestion ? new Date(causa.ultimaGestion).toLocaleDateString('es-CL') : '-'}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <Link href={`/dashboard/causas/${causa.id}`} className="text-lex-primary hover:text-lex-accent">
-                                                Ver detalle
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold">
+                                            <Link href={`/dashboard/causas/${causa.id}`} className="text-lex-primary hover:text-lex-vibrant-cyan dark:text-lex-vibrant-cyan dark:hover:text-lex-vibrant-green transition-colors hover:underline decoration-2 underline-offset-4">
+                                                Ver detalle →
                                             </Link>
                                         </td>
                                     </tr>
@@ -222,9 +252,12 @@ export default function DashboardPage() {
                             </tbody>
                         </table>
                     </div>
-                    <div className="bg-gray-50 px-6 py-3 border-t border-gray-200 dark:bg-gray-900/50 dark:border-gray-700 text-right">
-                        <Link href="/dashboard/causas" className="text-sm font-medium text-lex-primary hover:text-lex-accent">
-                            Ver todas las causas &rarr;
+                    <div className="bg-gradient-to-r from-gray-50 to-blue-50/30 dark:from-gray-900/50 dark:to-slate-800 px-8 py-4 border-t-2 border-gray-100 dark:border-gray-700 text-right">
+                        <Link href="/dashboard/causas" className="inline-flex items-center gap-2 text-sm font-bold text-lex-primary hover:text-lex-vibrant-cyan dark:text-lex-vibrant-cyan dark:hover:text-lex-vibrant-green transition-colors">
+                            Ver todas las causas
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
                         </Link>
                     </div>
                 </div>
