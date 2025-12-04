@@ -15,7 +15,7 @@ restartPolicyType = "ON_FAILURE"
 [services.web]
 # rootDirectory removed to use monorepo root context
 buildCommand = "pnpm install && pnpm --filter @leximetrics/db build && pnpm --filter web build"
-startCommand = "node apps/web/.next/standalone/apps/web/server.js"
+startCommand = "node apps/web/.next/standalone/server.js"
 restartPolicyType = "ON_FAILURE"
 
 # Service: Jarvis (Python)

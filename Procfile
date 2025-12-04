@@ -1,2 +1,2 @@
-web: node apps/web/.next/standalone/apps/web/server.js
+web: node apps/web/.next/standalone/server.js
 api: pnpm --filter api start:prod
