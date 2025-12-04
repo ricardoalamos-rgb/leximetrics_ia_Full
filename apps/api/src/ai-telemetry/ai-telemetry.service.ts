@@ -10,7 +10,7 @@ export class AiTelemetryService {
         tenantId: string,
         userId: string | null,
         dto: RecordUsageDto,
-    ) {
+    ): Promise<any> {
         return this.prisma.aiUsage.create({
             data: {
                 tenantId,
