@@ -2,7 +2,8 @@
 builder = "nixpacks"
 
 # Service: API (NestJS) -> Mapped to 'leximetrics_ia_Full' in Railway
-[services.leximetrics_ia_Full]
+# Service: API (NestJS) -> Mapped to 'api' in Railway
+[services.api]
 rootDirectory = "apps/api"
 buildCommand = "pnpm install && pnpm build"
 startCommand = "npm run start:prod"
