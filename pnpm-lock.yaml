@@ -52,6 +52,9 @@ importers:
       docxtemplater:
         specifier: ^3.67.5
         version: 3.67.5
+      multer:
+        specifier: ^2.0.2
+        version: 2.0.2
       pizzip:
         specifier: ^3.2.0
         version: 3.2.0
