@@ -4,16 +4,17 @@ builder = "nixpacks"
 # Service: API (NestJS) -> Mapped to 'leximetrics_ia_Full' in Railway
 # Service: API (NestJS) -> Mapped to 'api' in Railway
 # Service: API (NestJS) -> Mapped to 'api' in Railway
+# Service: API (NestJS) -> Mapped to 'api' in Railway
 [services.api]
 # rootDirectory removed to use monorepo root context
-buildCommand = "pnpm install && pnpm --filter @leximetrics/db generate && pnpm --filter api build"
+buildCommand = "pnpm install && pnpm --filter @leximetrics/db build && pnpm --filter api build"
 startCommand = "pnpm --filter api start:prod"
 restartPolicyType = "ON_FAILURE"
 
 # Service: Web (Next.js)
 [services.web]
 # rootDirectory removed to use monorepo root context
-buildCommand = "pnpm install && pnpm --filter @leximetrics/db generate && pnpm --filter web build"
+buildCommand = "pnpm install && pnpm --filter @leximetrics/db build && pnpm --filter web build"
 startCommand = "pnpm --filter web start"
 restartPolicyType = "ON_FAILURE"
 
