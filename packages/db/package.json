@@ -5,7 +5,7 @@
     "types": "dist/src/index.d.ts",
     "scripts": {
         "build": "prisma generate && tsc",
-        "build:seed": "tsc prisma/seed.ts --outDir dist/prisma --skipLibCheck --module commonjs --target es2019 --esModuleInterop",
+        "build:seed": "tsc prisma/seed.ts --outDir dist/prisma --skipLibCheck --module commonjs --target es2019 --esModuleInterop && cp prisma/causas_seed.json dist/prisma/causas_seed.json",
         "generate": "prisma generate",
         "push": "prisma db push",
         "studio": "prisma studio"
