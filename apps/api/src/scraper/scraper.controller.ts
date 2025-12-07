@@ -3,18 +3,36 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { ScraperService } from './scraper.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { IsString, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class TaskDto {
+    @IsString()
+    rit: string;
+    @IsString()
+    tribunal: string;
+}
 
 class SyncCausaDto {
+    @IsString()
     rut: string;
-    password: string; // In production this should be handled more securely or stored encrypted
+    @IsString()
+    password: string;
+    @IsString()
     rit: string;
+    @IsString()
     tribunal: string;
 }
 
 class BatchSyncDto {
+    @IsString()
     rut: string;
+    @IsString()
     password: string;
-    tasks: { rit: string; tribunal: string }[];
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => TaskDto)
+    tasks: TaskDto[];
 }
 
 @ApiTags('Scraper')
