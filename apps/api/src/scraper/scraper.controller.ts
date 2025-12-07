@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, BadRequestException, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { ScraperService } from './scraper.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -64,6 +64,7 @@ export class ScraperController {
 
     @Post('batch-sync')
     @ApiOperation({ summary: 'Trigger batch PJUD scraping' })
+    @UsePipes(new ValidationPipe({ whitelist: false, forbidNonWhitelisted: false }))
     @ApiBody({ type: BatchSyncDto })
     async batchSync(
         @Body() dto: BatchSyncDto,
