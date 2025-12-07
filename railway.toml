@@ -1,26 +1,24 @@
-[build]
-builder = "nixpacks"
+
 
 # Service: API (NestJS) -> Mapped to 'leximetrics_ia_Full' in Railway
 # Service: API (NestJS) -> Mapped to 'api' in Railway
 # Service: API (NestJS) -> Mapped to 'api' in Railway
 # Service: API (NestJS) -> Mapped to 'api' in Railway
 [services.api]
-# rootDirectory removed to use monorepo root context
-buildCommand = "pnpm install && pnpm --filter @leximetrics/db build && pnpm --filter api build"
-startCommand = "pnpm --filter api start:prod"
+# Dockerfile.api handles build and start
+dockerfilePath = "Dockerfile.api"
 restartPolicyType = "ON_FAILURE"
 
 # Service: Web (Next.js)
 [services.web]
-# rootDirectory removed to use monorepo root context
-buildCommand = "pnpm install && pnpm --filter @leximetrics/db build && pnpm --filter web build"
-startCommand = "node apps/web/.next/standalone/server.js"
+dockerfilePath = "Dockerfile"
+# Dockerfile handles build and start
+# buildCommand = "pnpm install && pnpm --filter @leximetrics/db build && pnpm --filter web build"
+# startCommand = "pnpm --filter web start"
 restartPolicyType = "ON_FAILURE"
 
-# Service: Jarvis (Python)
 [services.jarvis-service]
 rootDirectory = "services/jarvis-service"
 buildCommand = "pip install -r requirements.txt"
-startCommand = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+startCommand = "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8004}"
 restartPolicyType = "ON_FAILURE"

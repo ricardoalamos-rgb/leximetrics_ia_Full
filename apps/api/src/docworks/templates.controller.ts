@@ -6,7 +6,7 @@ import { TemplatesService } from '../templates/templates.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { DocumentType } from '@leximetrics/db';
+import { DocumentType, Template } from '@leximetrics/db';
 
 @ApiTags('Templates')
 @ApiBearerAuth()
@@ -21,23 +21,27 @@ export class TemplatesController {
 
     @Get()
     @ApiOperation({ summary: 'List available templates' })
-    async findAll(@CurrentUser('tenantId') tenantId: string) {
-        // Assuming templates are stored as Documents with a specific type or metadata
-        // For now, let's assume DocumentType.OTRO or a new type TEMPLATE if we had it.
-        // Or we can filter by a naming convention or a specific folder in storage.
-        // Let's query documents that might be templates.
-        // Ideally, we should have DocumentType.TEMPLATE.
-        // For this sprint, let's list all documents and let frontend filter, or filter by type if possible.
-        // Let's assume we use DocumentType.OTRO for now as generic, or maybe we added TEMPLATE to schema?
-        // Checking schema... DocumentType has ESCRITO, DEMANDA, RESOLUCION, NOTIFICACION, OTRO.
-        // Let's use OTRO for now, or maybe we should add TEMPLATE to schema later.
-
-        return this.prisma.documento.findMany({
+    async findAll(@CurrentUser('tenantId') tenantId: string): Promise<any[]> {
+        const templates = await this.prisma.template.findMany({
             where: {
                 tenantId,
-                // type: DocumentType.TEMPLATE, // If we had it
             },
         });
+
+        // Map to expected Documento-like interface for frontend compatibility
+        return templates.map(t => ({
+            id: t.id,
+            nombre: t.name, // Frontend expects 'nombre'
+            tipo: t.type,
+            url: t.storagePath, // Frontend uses 'url' or 'storagePath'
+            category: t.category,
+            description: t.description,
+            createdAt: t.createdAt,
+            updatedAt: t.updatedAt,
+            tenantId: t.tenantId,
+            // Param schema for DocWorks 2.0
+            paramSchema: t.paramSchema,
+        }));
     }
 
     @Get(':id/placeholders')
@@ -46,19 +50,16 @@ export class TemplatesController {
         @Param('id') id: string,
         @CurrentUser('tenantId') tenantId: string,
     ) {
-        const document = await this.prisma.documento.findUnique({
+        const template = await this.prisma.template.findUnique({
             where: { id },
         });
 
-        if (!document || document.tenantId !== tenantId) {
+        if (!template || template.tenantId !== tenantId) {
             throw new NotFoundException('Template not found');
         }
 
-        // Assuming document.url stores the relative path in storage (e.g., "tenantId/uuid.docx")
-        // If it stores full URL, we need to parse it. StorageService returns "tenantId/uuid.ext".
-        // Let's assume document.url holds the key.
-
-        return this.docWorksService.extractPlaceholders(document.url);
+        // Use storagePath
+        return this.docWorksService.extractPlaceholders(template.storagePath);
     }
 
     @Post(':id/generate')

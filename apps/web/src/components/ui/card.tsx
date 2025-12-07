@@ -91,3 +91,22 @@ export const CardContent = React.forwardRef<HTMLDivElement, CardContentProps>(
 );
 
 CardContent.displayName = 'CardContent';
+
+interface CardDescriptionProps extends React.HTMLAttributes<HTMLParagraphElement> {
+    children: React.ReactNode;
+}
+
+export const CardDescription = React.forwardRef<HTMLParagraphElement, CardDescriptionProps>(
+    ({ className, children, ...props }, ref) => {
+        return (
+            <p
+                ref={ref}
+                className={cn("text-sm text-gray-500 dark:text-gray-400", className)}
+                {...props}
+            >
+                {children}
+            </p>
+        );
+    }
+);
+CardDescription.displayName = 'CardDescription';

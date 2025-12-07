@@ -62,20 +62,34 @@ class GeminiClient:
             },
         }
 
-        resp = requests.post(
-            f"{GEMINI_ENDPOINT}?key={self.api_key}",
-            json=payload,
-            timeout=60,
-        )
-        resp.raise_for_status()
-        data = resp.json()
+        if not self.api_key:
+            return {
+                "answer": "⚠️ Error de Configuración: No se ha detectado la GEMINI_API_KEY en el entorno. Por favor configure la variable de entorno en Railway.",
+                "raw": {"error": "Missing API Key"}
+            }
 
-        answer = (
-            data.get("candidates", [{}])[0]
-            .get("content", {})
-            .get("parts", [{}])[0]
-            .get("text", "")
-            .strip()
-        )
+        try:
+            resp = requests.post(
+                f"{GEMINI_ENDPOINT}?key={self.api_key}",
+                json=payload,
+                timeout=60,
+            )
+            resp.raise_for_status()
+            data = resp.json()
 
-        return {"answer": answer, "raw": data}
+            answer = (
+                data.get("candidates", [{}])[0]
+                .get("content", {})
+                .get("parts", [{}])[0]
+                .get("text", "")
+                .strip()
+            )
+
+            return {"answer": answer, "raw": data}
+        
+        except Exception as e:
+            print(f"Gemini API Error: {e}")
+            return {
+                "answer": f"Lo siento, ocurrió un error al consultar a mi cerebro (Gemini): {str(e)}",
+                "raw": {"error": str(e)}
+            }

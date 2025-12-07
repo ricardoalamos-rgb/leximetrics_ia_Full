@@ -12,6 +12,7 @@ import {
     BrainCircuit,
     Settings,
     LogOut,
+    Upload,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Image from "next/image";
@@ -46,6 +47,11 @@ const sidebarItems = [
         title: 'J.A.R.V.I.S.',
         href: '/dashboard/jarvis',
         icon: Bot,
+    },
+    {
+        title: 'Carga Masiva',
+        href: '/dashboard/carga-masiva',
+        icon: Upload,
     },
 ];
 

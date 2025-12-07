@@ -6,6 +6,7 @@ import { Documento } from "@leximetrics/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, FileText, Sparkles, CheckCircle2, Upload, ArrowRight, ArrowLeft, Download } from "lucide-react";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 // Extended Template type for DocWorks 2.0
 interface DocWorksStyle {
@@ -60,6 +61,11 @@ export default function DocWorksView() {
     const [generating, setGenerating] = useState(false);
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
+
+    // Causa 360 Integration
+    const [causas, setCausas] = useState<any[]>([]);
+    const [selectedCausaId, setSelectedCausaId] = useState<string>("");
+    const [loadingCausas, setLoadingCausas] = useState(false);
 
     // New State for DocWorks 2.0
     const [currentStep, setCurrentStep] = useState<Step>(1);
@@ -116,8 +122,21 @@ export default function DocWorksView() {
             }
         };
 
+        const fetchCausas = async () => {
+            try {
+                setLoadingCausas(true);
+                const data = await apiClient.get<any[]>('/causas');
+                setCausas(data || []);
+            } catch (err) {
+                console.error("Error cargando causas:", err);
+            } finally {
+                setLoadingCausas(false);
+            }
+        };
+
         fetchTemplates();
         fetchStyle();
+        fetchCausas();
     }, []);
 
     const handleTemplateChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -454,6 +473,93 @@ export default function DocWorksView() {
         }
     };
 
+    const handleAnalyzeCausa360 = async () => {
+        if (!selectedTemplate || !selectedCausaId) return;
+
+        const startedAt = performance.now();
+        setAnalyzing(true);
+        setError("");
+        setSuccessMessage("");
+
+        try {
+            const prompt = `
+            Actúa como un asistente legal experto. Analiza TODA la información disponible de la causa (historial, movimientos, documentos, deuda, etc.) y extrae los valores para los siguientes campos: ${placeholders.join(',')}.
+            Responde DIRECTAMENTE con un objeto JSON válido donde las claves sean los nombres de los campos y los valores sean la información extraída.
+            Si no encuentras información para un campo, usa una cadena vacía "".
+            NO incluyas markdown (como \`\`\`json), solo el JSON raw.
+            `;
+
+            const response = await apiClient.post<{ reply: string }>('/jarvis/ask-causa', {
+                question: prompt,
+                causaId: selectedCausaId,
+            });
+
+            const answer = response.reply;
+            let placeholdersFound: Record<string, string> = {};
+
+            try {
+                // Clean markdown code blocks if present (Jarvis api might return markdown)
+                const cleanedAnswer = answer.replace(/'''json/g, '').replace(/```json/g, '').replace(/```/g, '').trim();
+                // Find JSON object using regex as fallback or direct parse
+                const jsonMatch = cleanedAnswer.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    placeholdersFound = JSON.parse(jsonMatch[0]);
+                } else {
+                    placeholdersFound = JSON.parse(cleanedAnswer);
+                }
+            } catch (parseError) {
+                console.error("Error parsing JSON from 360:", parseError);
+                throw new Error("La respuesta de Causa 360 no tuvo el formato esperado.");
+            }
+
+            let fromAiCount = 0;
+            let filledCount = 0;
+
+            setFormData((prevData) => {
+                const newData = { ...prevData };
+                const newSources = { ...fieldSources };
+
+                Object.keys(placeholdersFound).forEach((key) => {
+                    const val = placeholdersFound[key];
+                    if (val !== null && val !== undefined && String(val).trim() !== '') {
+                        newData[key] = String(val);
+                        newSources[key] = 'ai';
+                        fromAiCount++;
+                    }
+                });
+
+                filledCount = Object.values(newData).filter(v => v.trim().length > 0).length;
+                setFieldSources(newSources);
+                return newData;
+            });
+
+            setAiSummary({
+                extractedTextLength: answer.length, // Proxy for complexity
+                filledCount,
+                fromAiCount
+            });
+
+            setSuccessMessage(`✨ Causa 360 completó automáticamente ${fromAiCount} campos.`);
+
+            await sendTelemetry({
+                feature: 'docworks',
+                action: 'causa_360_analysis',
+                durationMs: Math.round(performance.now() - startedAt),
+                meta: {
+                    templateId: selectedTemplate.id,
+                    causaId: selectedCausaId,
+                    fromAiCount,
+                },
+            });
+
+        } catch (err: any) {
+            console.error("Error Causa 360:", err);
+            setError(err.message || "Error al analizar Causa 360");
+        } finally {
+            setAnalyzing(false);
+        }
+    };
+
     const handleGenerate = async () => {
         if (!selectedTemplate) return;
         setGenerating(true);
@@ -624,24 +730,36 @@ export default function DocWorksView() {
                                     <CardTitle>Seleccionar Plantilla</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <label htmlFor="template" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
                                         Elige el tipo de documento a generar
                                     </label>
                                     <div className="relative">
-                                        <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                        <select
-                                            id="template"
-                                            className="block w-full rounded-xl border-gray-300 py-3 pl-10 pr-10 text-base focus:border-lex-brand focus:outline-none focus:ring-2 focus:ring-lex-brand/20 sm:text-sm dark:border-gray-600 dark:bg-slate-700 dark:text-white transition-all"
-                                            value={selectedTemplate?.id || ""}
-                                            onChange={handleTemplateChange}
-                                        >
-                                            <option value="">-- Seleccione una plantilla --</option>
-                                            {templates.map((t) => (
-                                                <option key={t.id} value={t.id}>
-                                                    {t.nombre}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <SearchableSelect
+                                            options={templates.map(t => ({
+                                                value: t.id,
+                                                label: t.nombre,
+                                                group: t.category || "General"
+                                            }))}
+                                            value={selectedTemplate?.id}
+                                            onChange={(val) => handleTemplateChange({ target: { value: val } } as any)}
+                                            placeholder="Buscar en la biblioteca legal..."
+                                        />
+                                    </div>
+                                    <div className="mt-4 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                                        {/* Quick Filters / Chips (Optional enhancement) */}
+                                        {['Civil', 'Penal', 'Laboral', 'Familia'].map(cat => (
+                                            <button
+                                                key={cat}
+                                                className="px-3 py-1 bg-gray-100 dark:bg-slate-700 text-xs rounded-full hover:bg-lex-brand hover:text-white transition-colors whitespace-nowrap"
+                                                onClick={() => {
+                                                    // This is a UI hint, for now pure search is powerful enough.
+                                                    // Implementing this requires passing filter prop to SearchableSelect or filtering upstream.
+                                                    // Let's leave it as visual candy or implement later.
+                                                }}
+                                            >
+                                                {cat}
+                                            </button>
+                                        ))}
                                     </div>
                                 </CardContent>
                             </Card>
@@ -685,28 +803,62 @@ export default function DocWorksView() {
                                         Sube un PDF (ej. demanda, resolución) y la IA extraerá la información para completar la plantilla automáticamente.
                                     </p>
 
-                                    <div className="flex justify-center mb-8">
-                                        <label className={`cursor-pointer inline-flex items-center gap-3 rounded-xl px-8 py-4 text-lg font-medium text-white shadow-lg transition-all hover:-translate-y-1 ${analyzing ? 'bg-purple-400 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:shadow-purple-500/30'
-                                            }`}>
-                                            {analyzing ? (
-                                                <>
-                                                    <Loader2 className="w-6 h-6 animate-spin" />
-                                                    Analizando Documento...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Upload className="w-6 h-6" />
-                                                    <span>Subir PDF para Análisis</span>
-                                                    <input
-                                                        type="file"
-                                                        accept="application/pdf"
-                                                        className="hidden"
-                                                        onChange={handleAnalyzePDF}
-                                                        disabled={analyzing}
-                                                    />
-                                                </>
-                                            )}
-                                        </label>
+                                    <div className="flex flex-col md:flex-row justify-center gap-6 mb-8">
+                                        <div className="flex flex-col items-center gap-4 w-full md:w-1/2 p-6 border border-gray-100 dark:border-gray-800 rounded-2xl bg-white dark:bg-slate-800/50 hover:shadow-lg transition-shadow">
+                                            <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-full text-blue-600 dark:text-blue-400">
+                                                <FileText className="w-6 h-6" />
+                                            </div>
+                                            <h3 className="font-semibold">Subir Documento</h3>
+                                            <label className={`cursor-pointer inline-flex items-center gap-3 rounded-xl px-6 py-3 text-sm font-medium text-white shadow-lg transition-all hover:-translate-y-1 w-full justify-center ${analyzing ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:shadow-purple-500/30'
+                                                }`}>
+                                                {analyzing ? (
+                                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                                ) : (
+                                                    <Upload className="w-5 h-5" />
+                                                )}
+                                                <span>{analyzing ? 'Analizando...' : 'Elegir PDF'}</span>
+                                                <input
+                                                    type="file"
+                                                    accept="application/pdf"
+                                                    className="hidden"
+                                                    onChange={handleAnalyzePDF}
+                                                    disabled={analyzing}
+                                                />
+                                            </label>
+                                        </div>
+
+                                        <div className="hidden md:flex items-center justify-center text-gray-400 font-medium">
+                                            O
+                                        </div>
+
+                                        <div className="flex flex-col items-center gap-4 w-full md:w-1/2 p-6 border border-gray-100 dark:border-gray-800 rounded-2xl bg-white dark:bg-slate-800/50 hover:shadow-lg transition-shadow">
+                                            <div className="bg-emerald-100 dark:bg-emerald-900/30 p-3 rounded-full text-emerald-600 dark:text-emerald-400">
+                                                <Sparkles className="w-6 h-6" />
+                                            </div>
+                                            <h3 className="font-semibold">Causa 360</h3>
+                                            <select
+                                                className="w-full text-sm rounded-lg border-gray-300 dark:bg-slate-700 dark:border-gray-600 dark:text-white mb-2"
+                                                value={selectedCausaId}
+                                                onChange={(e) => setSelectedCausaId(e.target.value)}
+                                                disabled={analyzing || loadingCausas}
+                                            >
+                                                <option value="">Seleccionar Causa...</option>
+                                                {causas.map((c: any) => (
+                                                    <option key={c.id} value={c.id}>
+                                                        {c.rol || c.snumcaso || c.caratulado || 'Sin ROL'} - {c.caratulado || 'Sin Caratula'}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <button
+                                                onClick={handleAnalyzeCausa360}
+                                                disabled={analyzing || !selectedCausaId}
+                                                className={`cursor-pointer inline-flex items-center gap-3 rounded-xl px-6 py-3 text-sm font-medium text-white shadow-lg transition-all hover:-translate-y-1 w-full justify-center ${analyzing || !selectedCausaId ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:shadow-emerald-500/30'
+                                                    }`}
+                                            >
+                                                {analyzing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+                                                <span>Analizar con Causa 360</span>
+                                            </button>
+                                        </div>
                                     </div>
 
                                     {aiSummary && (

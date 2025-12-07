@@ -11,6 +11,12 @@ class SyncCausaDto {
     tribunal: string;
 }
 
+class BatchSyncDto {
+    rut: string;
+    password: string;
+    tasks: { rit: string; tribunal: string }[];
+}
+
 @ApiTags('Scraper')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -36,5 +42,25 @@ export class ScraperController {
             dto.tribunal,
             tenantId,
         );
+    }
+
+    @Post('batch-sync')
+    @ApiOperation({ summary: 'Trigger batch PJUD scraping' })
+    @ApiBody({ type: BatchSyncDto })
+    async batchSync(
+        @Body() dto: BatchSyncDto,
+        @CurrentUser('tenantId') tenantId: string,
+    ) {
+        if (!dto.rut || !dto.password || !dto.tasks || dto.tasks.length === 0) {
+            throw new BadRequestException('Missing required fields or tasks');
+        }
+
+        // Processing asynchronously to avoid timeout
+        // In a real scenario, push to queue. Here, we map promises but don't await all if we want fast response?
+        // Actually, user expects "Scheduled".
+
+        this.scraperService.batchSync(dto.rut, dto.password, dto.tasks, tenantId);
+
+        return { message: `Scheduled ${dto.tasks.length} scraping tasks` };
     }
 }

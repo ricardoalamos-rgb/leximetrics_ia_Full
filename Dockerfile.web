@@ -16,8 +16,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Install OpenSSL and libc6-compat for Prisma
-RUN apk add --no-cache openssl libc6-compat
+# Install OpenSSL and libc6-compat for Prisma, and ca-certificates for SSL
+RUN apk add --no-cache openssl libc6-compat ca-certificates update-ca-certificates
 
 
 # Copy root workspace files
@@ -28,7 +28,7 @@ COPY apps/web/package.json ./apps/web/package.json
 COPY packages/db/package.json ./packages/db/package.json
 
 # Install prod dependencies
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --prod
 # Generate prisma client in prod
 COPY packages/db/prisma ./packages/db/prisma
 RUN pnpm --filter @leximetrics/db run generate
@@ -43,4 +43,7 @@ COPY --from=builder /app/apps/web/postcss.config.js ./apps/web/postcss.config.js
 EXPOSE 3000
 
 # Use pnpm to start to ensure paths are correct
-CMD ["pnpm", "--filter", "web", "start", "--", "-p", "3000"]
+# Use pnpm to start to ensure paths are correct
+# Force binding to 0.0.0.0 to ensure Railway proxy can reach it
+ENV HOSTNAME "0.0.0.0"
+CMD ["pnpm", "--filter", "web", "start", "--", "-p", "3000", "-H", "0.0.0.0"]

@@ -10,7 +10,7 @@ export class JarvisService {
     constructor(private readonly configService: ConfigService) {
         this.baseUrl =
             this.configService.get<string>('JARVIS_BACKEND_URL')?.replace(/\/+$/, '') ??
-            'http://localhost:8004';
+            'https://jarvis-service-production.up.railway.app';
     }
 
     async ask(question: string, tenantId: string, userId: string) {

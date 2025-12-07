@@ -1,0 +1,26 @@
+[
+  {
+    "rol": "C-1234-2024",
+    "tribunal": "1º Juzgado Civil de Santiago",
+    "caratula": "BANCO CHILE / GONZALEZ",
+    "materia": "Civil",
+    "rutDeudor": "11.111.111-1",
+    "nombreDeudor": "JUAN GONZALEZ",
+    "montoDemanda": 5000000.0,
+    "fechaIngreso": "2024-01-15",
+    "estado": "TRAMITACION",
+    "resumen": "Deudor: JUAN GONZALEZ"
+  },
+  {
+    "rol": "C-5678-2023",
+    "tribunal": "2º Juzgado Civil de Santiago",
+    "caratula": "SCOTIABANK / TAPIA",
+    "materia": "Civil",
+    "rutDeudor": "22.222.222-2",
+    "nombreDeudor": "MARIA TAPIA",
+    "montoDemanda": 1250000.0,
+    "fechaIngreso": "2023-11-20",
+    "estado": "TRAMITACION",
+    "resumen": "Deudor: MARIA TAPIA"
+  }
+]

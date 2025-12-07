@@ -59,9 +59,9 @@ export function JarvisChat({
             };
 
             setMessages((prev) => [...prev, assistantMessage]);
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error sending message to Jarvis:', err);
-            setError('Error al conectar con J.A.R.V.I.S.');
+            setError(err.message || 'Error al conectar con J.A.R.V.I.S.');
         } finally {
             setLoading(false);
         }

@@ -1,14 +1,11 @@
-import { Controller, Post, Get, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, BadRequestException } from '@nestjs/common';
 import { JarvisService } from './jarvis.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from '../common/decorators/public.decorator';
 
-class AskCausaDto {
-    question: string;
-    causaId: string;
-}
+import { AskJarvisDto } from './dto/ask-jarvis.dto';
 
 @ApiTags('JARVIS')
 @Controller('jarvis')
@@ -20,13 +17,27 @@ export class JarvisController {
     @Post('ask-causa')
     @ApiOperation({ summary: 'Preguntar a JARVIS con contexto de causa' })
     async askCausa(
-        @Body() body: AskCausaDto,
+        @Body() body: AskJarvisDto,
         @CurrentUser('tenantId') tenantId: string,
         @CurrentUser('id') userId: string,
     ) {
-        const { question, causaId } = body;
+        const { question, messages, causaId } = body;
+
+        // Extract question from messages if not provided directly
+        let finalQuestion = question;
+        if (!finalQuestion && messages && messages.length > 0) {
+            const lastMessage = messages[messages.length - 1];
+            if (lastMessage.role === 'user') {
+                finalQuestion = lastMessage.content;
+            }
+        }
+
+        if (!finalQuestion) {
+            throw new BadRequestException('No question provided in body or messages');
+        }
+
         return this.jarvisService.askForCausa({
-            question,
+            question: finalQuestion,
             causaId,
             tenantId,
             userId,

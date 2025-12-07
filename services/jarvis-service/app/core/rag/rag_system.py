@@ -1,5 +1,5 @@
 from typing import Dict, Any, List
-# from .knowledge_base import knowledge_base
+from .knowledge_base import knowledge_base
 from ..ai.gemini_client import GeminiClient
 from .scielo_scraper import scielo_scraper
 
@@ -8,13 +8,13 @@ gemini_client = GeminiClient()
 
 class RAGSystem:
     def __init__(self):
-        # self.kb = knowledge_base
+        self.kb = knowledge_base
         self.scielo = scielo_scraper
 
     def answer_question(self, question: str, extra_context: str | None = None) -> Dict[str, Any]:
-        # 1) Buscar en KB Local (ChromaDB) - DESHABILITADO TEMPORALMENTE
-        # kb_results = self.kb.search(question, collection_name="libros")
-        kb_results = []
+        # 1) Buscar en KB Local (ChromaDB)
+        kb_results = self.kb.search(question, collection_name="libros", limit=3)
+        # kb_results = []
         
         # 2) Buscar en SciELO (Web Scraper)
         scielo_results = self.scielo.search(question, limit=3)

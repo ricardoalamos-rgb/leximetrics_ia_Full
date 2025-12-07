@@ -50,7 +50,7 @@ export default function LoginPage() {
                     />
                     <h1 className="text-5xl font-extrabold mb-6 leading-tight tracking-tight">
                         <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-lex-vibrant-cyan to-lex-vibrant-green animate-glow">
-                            Legal Operating System
+                            Tu Sistema de Gestión Legal y Cobranzas
                         </span>
                     </h1>
                     <p className="text-xl text-gray-100 leading-relaxed font-light">

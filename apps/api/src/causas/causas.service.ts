@@ -34,4 +34,26 @@ export class CausasService {
 
         return causa;
     }
+
+    async createMany(data: any[], tenantId: string) {
+        // Map DTO to DB schema, ensuring tenantId
+        const records = data.map(item => ({
+            ...item,
+            tenantId,
+            fechaIngreso: item.fechaIngreso ? new Date(item.fechaIngreso) : undefined,
+            updatedAt: new Date(), // Explicitly set if needed, though default handles creation
+        }));
+
+        // Using createMany for bulk insertion efficiency
+        // skipDuplicates is true to avoid errors on potential re-runs if unique constraints existed (Rol isn't unique yet, but safe practice)
+        const result = await this.prisma.causa.createMany({
+            data: records,
+            skipDuplicates: true,
+        });
+
+        return {
+            count: result.count,
+            message: `Successfully created ${result.count} causes.`
+        };
+    }
 }

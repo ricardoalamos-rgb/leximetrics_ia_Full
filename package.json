@@ -10,7 +10,7 @@
     "test": "pnpm -r test"
   },
   "engines": {
-    "node": ">=18",
+    "node": ">=20",
     "pnpm": ">=8"
   },
   "packageManager": "pnpm@8.15.4"

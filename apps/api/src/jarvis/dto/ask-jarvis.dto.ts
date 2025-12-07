@@ -1,10 +1,35 @@
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, IsArray } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-export class AskJarvisDto {
-    @ApiProperty({ description: 'Pregunta en lenguaje natural para J.A.R.V.I.S.' })
+export class ChatMessageDto {
+    @ApiProperty()
     @IsString()
-    question: string;
+    role: 'user' | 'assistant';
+
+    @ApiProperty()
+    @IsString()
+    content: string;
+}
+
+export class AskJarvisDto {
+    @ApiProperty({ description: 'Pregunta en lenguaje natural (Legacy)' })
+    @IsString()
+    @IsOptional()
+    question?: string;
+
+    @ApiProperty({ description: 'Historial de chat', type: [ChatMessageDto] })
+    @IsOptional()
+    @IsArray()
+    messages?: ChatMessageDto[];
+
+    @ApiPropertyOptional({ description: 'Contexto adicional (causa, cliente, etc)' })
+    @IsOptional()
+    context?: any;
+
+    @ApiPropertyOptional({ description: 'ID de la Causa vinculada' })
+    @IsOptional()
+    @IsString()
+    causaId?: string;
 
     @ApiPropertyOptional({
         description: 'Si se debe generar también audio TTS con voz masculina Jarvis',

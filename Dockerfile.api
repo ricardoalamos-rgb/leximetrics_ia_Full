@@ -5,8 +5,13 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY . .
 
+# Install dependencies
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @leximetrics/db run generate
+
+# Build DB explicitly to ensure dist exists
+RUN pnpm --filter @leximetrics/db run build
+# Compile seed script
+RUN pnpm --filter @leximetrics/db run build:seed
 RUN pnpm --filter api build
 
 FROM node:20-alpine AS runner
@@ -15,9 +20,8 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Install OpenSSL and libc6-compat for Prisma
-RUN apk add --no-cache openssl libc6-compat
-
+# Install OpenSSL and libc6-compat for Prisma, and ca-certificates for SSL
+RUN apk add --no-cache openssl libc6-compat ca-certificates update-ca-certificates
 
 # Copy root workspace files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -30,13 +34,17 @@ COPY packages/db/package.json ./packages/db/package.json
 RUN pnpm install --prod --frozen-lockfile
 # Generate prisma client in prod
 COPY packages/db/prisma ./packages/db/prisma
+COPY packages/db/templates ./packages/db/templates
 RUN pnpm --filter @leximetrics/db run generate
 
 # Copy build output
-# NestJS build in subfolder outputs to apps/api/dist
-COPY --from=builder /app/apps/api/dist ./dist/apps/api
+# Copy API build
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+# Copy DB build (crucial for runtime)
+COPY --from=builder /app/packages/db/dist ./packages/db/dist
 
-ENV PORT=4000
-EXPOSE 4000
+ENV PORT=3001
+EXPOSE 3001
 
-CMD ["node", "dist/apps/api/main.js"]
+# Launch seed then app
+CMD ["sh", "-c", "node packages/db/dist/prisma/seed.js && node apps/api/dist/main.js"]

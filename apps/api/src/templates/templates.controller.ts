@@ -34,6 +34,17 @@ export class TemplatesController {
         };
     }
 
+    @Get(':id/placeholders')
+    @Roles(UserRole.ADMIN, UserRole.LAWYER)
+    @ApiOperation({ summary: 'Obtener placeholders de una plantilla' })
+    async getPlaceholders(
+        @Param('id') id: string,
+        @CurrentUser('tenantId') tenantId: string,
+    ): Promise<string[]> {
+        const template = await this.templatesService.findOne(id, tenantId);
+        return (template.placeholders as string[]) || [];
+    }
+
     @Patch(':id/schema')
     @Roles(UserRole.ADMIN, UserRole.LAWYER)
     @ApiOperation({ summary: 'Actualizar esquema parametrizado y metadatos de plantilla' })
