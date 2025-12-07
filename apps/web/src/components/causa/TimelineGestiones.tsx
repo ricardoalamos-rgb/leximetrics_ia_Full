@@ -26,7 +26,7 @@ export const TimelineGestiones = ({ causaId, gestiones }: TimelineGestionesProps
             setLoading(true);
             setError(null);
             // Ajusta este endpoint si en tu API la ruta es distinta (por ejemplo /gestiones?causaId=)
-            const data = await apiClient.get<Gestion[]>(`/gestiones/causa/${causaId}`);
+            const data = await apiClient.get<Gestion[]>(`/gestiones/by-causa/${causaId}`);
             const sorted = [...data].sort((a, b) => {
                 const da = new Date(a.fecha);
                 const db = new Date(b.fecha);
