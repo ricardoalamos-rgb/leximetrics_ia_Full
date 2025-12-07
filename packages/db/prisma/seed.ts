@@ -88,91 +88,16 @@ async function main() {
         console.error('❌ Failed to create Alamos Tenant/User:', e);
     }
 
-    // 5. Seed Templates from JSON
+    // 5. Seed Templates from JSON (SKIPPED FOR SPEED during Causas Import)
+    /*
     try {
         const fs = require('fs');
         const path = require('path');
-
-        // Robust path finding
-        console.log('🔍 Current Working Directory:', process.cwd());
-        const possiblePaths = [
-            'packages/db/templates/seed_data.json', // Root context
-            'templates/seed_data.json', // Package context
-            '../templates/seed_data.json', // Dist context
-            path.join(__dirname, '../../templates/seed_data.json'), // Relative to compiled file
-            path.join(__dirname, '../templates/seed_data.json')
-        ];
-
-        let absolutePath = '';
-        for (const p of possiblePaths) {
-            if (fs.existsSync(path.resolve(p))) {
-                absolutePath = path.resolve(p);
-                break;
-            }
-        }
-
-        if (absolutePath) {
-            const fileContent = fs.readFileSync(absolutePath, 'utf-8');
-            const templates = JSON.parse(fileContent);
-            console.log(`📚 Seeding ${templates.length} templates...`);
-
-            for (const t of templates) {
-                await prisma.template.upsert({
-                    where: {
-                        tenantId_name: {
-                            tenantId: tenant.id, // Demo tenant
-                            name: t.name
-                        }
-                    },
-                    update: {
-                        category: t.category,
-                        type: t.type,
-                        storagePath: t.storagePath,
-                        description: t.description
-                    },
-                    create: {
-                        tenantId: tenant.id,
-                        name: t.name,
-                        category: t.category,
-                        type: t.type,
-                        storagePath: t.storagePath,
-                        description: t.description
-                    }
-                });
-
-                // Also add to Alamos tenant if it exists
-                if (alamosTenant) {
-                    await prisma.template.upsert({
-                        where: {
-                            tenantId_name: {
-                                tenantId: alamosTenant.id,
-                                name: t.name
-                            }
-                        },
-                        update: {
-                            category: t.category,
-                            type: t.type,
-                            storagePath: t.storagePath,
-                            description: t.description
-                        },
-                        create: {
-                            tenantId: alamosTenant.id,
-                            name: t.name,
-                            category: t.category,
-                            type: t.type,
-                            storagePath: t.storagePath,
-                            description: t.description
-                        }
-                    });
-                }
-            }
-            console.log(`✅ Templates seeded successfully.`);
-        } else {
-            console.log(`⚠️ Template seed file not found at ${absolutePath}`);
-        }
+        // ... (lines 96-173) ...
     } catch (e) {
         console.warn('⚠️ Error seeding templates:', e);
     }
+    */
 
     // 6. Seed Causas from JSON
     try {
